@@ -1,4 +1,4 @@
-// Exportiere die Tabellen-Klasse
+// Export the table class
 export { PdfTable } from './classes/Table';
 export * from './config/DesignConfig';
 export { CustomFont } from './models/CustomFont';

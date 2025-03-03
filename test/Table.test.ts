@@ -7,14 +7,14 @@ function createTable(): PdfTable {
   return new PdfTable(options);
 }
 
-test('PdfTable: sollte eine PDF-Seite erstellen', async () => {
+test('PdfTable: should create a PDF page', async () => {
   const table = createTable();
   const pdfDoc: PDFDocument = await table.toPDF();
   const pages = pdfDoc.getPages();
   expect(pages.length).toBeGreaterThan(0);
 });
 
-test('PdfTable: sollte Zellen mit Inhalt setzen können', () => {
+test('PdfTable: should be able to set cells with content', () => {
   const table = createTable();
   // First call to set the cell should succeed.
   table.setCell(1, 1, 'Test');
@@ -22,22 +22,22 @@ test('PdfTable: sollte Zellen mit Inhalt setzen können', () => {
   expect(() => table.setCell(1, 1, 'Test')).not.toThrow();
 });
 
-test('PdfTable: sollte individuelle Zellenstile setzen können', () => {
+test('PdfTable: should be able to set individual cell styles', () => {
   const table = createTable();
   const style = { fontSize: 16, alignment: 'center' as const };
   table.setCellStyle(0, 0, style);
   expect(() => table.setCellStyle(0, 0, style)).not.toThrow();
 });
 
-test('PdfTable: sollte Zellen korrekt zusammenführen', () => {
+test('PdfTable: should merge cells correctly', () => {
   const table = createTable();
   table.mergeCells(0, 0, 1, 1);
   expect(() => table.mergeCells(0, 0, 1, 1)).not.toThrow();
 });
 
-test('PdfTable: sollte einen Fehler bei ungültigen Merge-Koordinaten werfen', () => {
+test('PdfTable: should throw an error for invalid merge coordinates', () => {
   const table = createTable();
   expect(() => table.mergeCells(2, 2, 1, 1)).toThrowError(
-    'Ungültige Zellenkoordinaten für mergeCells',
+    'Invalid cell coordinates for mergeCells',
   );
 });

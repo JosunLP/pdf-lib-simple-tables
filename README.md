@@ -1,22 +1,22 @@
 # PDF.js Table Library
 
-## Übersicht
+## Overview
 
-Die PDF.js Table Library ist eine TypeScript-Bibliothek, die es ermöglicht, Tabellen in PDF-Dokumente zu erstellen und zu integrieren. Diese Bibliothek nutzt `pdf-lib` zur PDF-Erstellung und bietet erweiterte Funktionen wie benutzerdefinierte Schriftarten, Zellstile und das Zusammenführen von Zellen.
+The PDF.js Table Library is a TypeScript library that allows you to create and integrate tables into PDF documents. This library uses `pdf-lib` for PDF creation and offers advanced features such as custom fonts, cell styles, and cell merging.
 
 ## Installation
 
-Verwenden Sie npm oder yarn, um die Bibliothek zu installieren:
+Use npm or yarn to install the library:
 
 ```bash
 npm install pdfjs-table-lib
-# oder
+# or
 yarn add pdfjs-table-lib
 ```
 
-## Verwendung
+## Usage
 
-### Grundlegendes Beispiel
+### Basic Example
 
 ```typescript
 import { PdfTable } from 'pdfjs-table-lib';
@@ -34,9 +34,9 @@ const pdfDoc = await table.toPDF();
 const pdfBytes = await pdfDoc.save();
 ```
 
-### Erweiterte Optionen
+### Advanced Options
 
-#### Zellstile
+#### Cell Styles
 
 ```typescript
 table.setCellStyle(0, 0, {
@@ -49,13 +49,13 @@ table.setCellStyle(0, 0, {
 });
 ```
 
-#### Zusammenführen von Zellen
+#### Merging Cells
 
 ```typescript
 table.mergeCells(1, 0, 1, 2);
 ```
 
-#### Benutzerdefinierte Schriftarten
+#### Custom Fonts
 
 ```typescript
 import { CustomFont } from 'pdfjs-table-lib';
@@ -64,22 +64,22 @@ const customFont = new CustomFont('MyFont', 'base64-encoded-font-data');
 table.setCustomFont(customFont);
 ```
 
-### Neue Methoden
+### New Methods
 
-#### Zellen auslesen
+#### Reading Cells
 
 ```typescript
 const cellValue = table.getCell(0, 0);
 const cellStyle = table.getCellStyle(0, 0);
 ```
 
-#### Zellen bearbeiten
+#### Editing Cells
 
 ```typescript
 table.removeCell(0, 0);
 ```
 
-#### Zeilen und Spalten hinzufügen/entfernen
+#### Adding/Removing Rows and Columns
 
 ```typescript
 table.addRow();
@@ -90,12 +90,12 @@ table.removeColumn(0);
 
 ## API
 
-### Klassen
+### Classes
 
 #### `PdfTable`
 
-- **Konstruktor**: `new PdfTable(options: TableOptions)`
-- **Methoden**:
+- **Constructor**: `new PdfTable(options: TableOptions)`
+- **Methods**:
   - `setCell(row: number, col: number, value: string): void`
   - `setCellStyle(row: number, col: number, style: TableCellStyle): void`
   - `mergeCells(startRow: number, startCol: number, endRow: number, endCol: number): void`
@@ -111,9 +111,9 @@ table.removeColumn(0);
 
 #### `CustomFont`
 
-- **Konstruktor**: `new CustomFont(name: string, base64: string, extension?: string)`
+- **Constructor**: `new CustomFont(name: string, base64: string, extension?: string)`
 
-### Schnittstellen
+### Interfaces
 
 #### `TableOptions`
 
@@ -138,39 +138,39 @@ table.removeColumn(0);
 - `endRow: number`
 - `endCol: number`
 
-## Entwicklung
+## Development
 
-### Voraussetzungen
+### Prerequisites
 
 - Node.js
-- npm oder yarn
+- npm or yarn
 
-### Installation der Abhängigkeiten
+### Installing Dependencies
 
 ```bash
 npm install
-# oder
+# or
 yarn install
 ```
 
-### Tests ausführen
+### Running Tests
 
 ```bash
 npm test
-# oder
+# or
 yarn test
 ```
 
-### Linting und Formatierung
+### Linting and Formatting
 
 ```bash
 npm run lint
 npm run format
-# oder
+# or
 yarn lint
 yarn format
 ```
 
-## Lizenz
+## License
 
-Dieses Projekt ist unter der MIT-Lizenz lizenziert. Weitere Informationen finden Sie in der [LICENSE](./LICENSE) Datei.
+This project is licensed under the MIT License. For more information, see the [LICENSE](./LICENSE) file.

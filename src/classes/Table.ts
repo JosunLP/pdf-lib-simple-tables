@@ -14,13 +14,13 @@ import { TableOptions } from '../interfaces/TableOptions';
 export class PdfTable {
   private options: TableOptions;
   private data: string[][] = [];
-  private cellStyles: TableCellStyle[][] = []; // Matrix für Zellenstile
+  private cellStyles: TableCellStyle[][] = []; // Matrix for cell styles
   private mergedCells: MergedCell[] = [];
   private customFont?: CustomFont;
-  private designConfig: DesignConfig; // neue Eigenschaft
+  private designConfig: DesignConfig; // new property
 
   constructor(options: TableOptions) {
-    // Setze Default-Werte falls nicht vorhanden und mergen Designconfig
+    // Set default values if not present and merge design config
     this.options = {
       rowHeight: 20,
       colWidth: 80,
@@ -39,110 +39,110 @@ export class PdfTable {
     );
   }
 
-  // Methode zum Befüllen einer Zelle
+  // Method to fill a cell
   setCell(row: number, col: number, value: string): void {
     if (row < this.options.rows && col < this.options.columns) {
       this.data[row][col] = value;
     }
   }
 
-  // Neue Methode zum Setzen eines individuellen Zellen-Stils
+  // New method to set an individual cell style
   setCellStyle(row: number, col: number, style: TableCellStyle): void {
     if (row < this.options.rows && col < this.options.columns) {
       this.cellStyles[row][col] = { ...this.cellStyles[row][col], ...style };
     }
   }
 
-  // Neue Methode zum Zusammenführen von Zellen mit Validierung
+  // New method to merge cells with validation
   mergeCells(startRow: number, startCol: number, endRow: number, endCol: number): void {
-    // Validierung: Startkoordinaten müssen kleiner/gleich Endkoordinaten sein
+    // Validation: start coordinates must be less than or equal to end coordinates
     if (startRow > endRow || startCol > endCol) {
-      throw new Error('Ungültige Zellenkoordinaten für mergeCells');
+      throw new Error('Invalid cell coordinates for mergeCells');
     }
-    // ...weitere Validierungen könnten hier erfolgen...
+    // ...further validations could be done here...
     this.mergedCells.push({ startRow, startCol, endRow, endCol });
   }
 
-  // Methode zum Setzen eines benutzerdefinierten Fonts
+  // Method to set a custom font
   setCustomFont(font: CustomFont): void {
     if (!this.isValidBase64(font.base64)) {
-      throw new Error('Ungültige Base64-Daten');
+      throw new Error('Invalid Base64 data');
     }
     this.customFont = font;
   }
 
-  // Methode zum Auslesen des Inhalts einer Zelle
+  // Method to read the content of a cell
   getCell(row: number, col: number): string {
     if (row < this.options.rows && col < this.options.columns) {
       return this.data[row][col];
     }
-    throw new Error('Ungültige Zellenkoordinaten');
+    throw new Error('Invalid cell coordinates');
   }
 
-  // Methode zum Auslesen des Stils einer Zelle
+  // Method to read the style of a cell
   getCellStyle(row: number, col: number): TableCellStyle {
     if (row < this.options.rows && col < this.options.columns) {
       return this.cellStyles[row][col];
     }
-    throw new Error('Ungültige Zellenkoordinaten');
+    throw new Error('Invalid cell coordinates');
   }
 
-  // Methode zum Entfernen einer Zelle
+  // Method to remove a cell
   removeCell(row: number, col: number): void {
     if (row < this.options.rows && col < this.options.columns) {
       this.data[row][col] = '';
       this.cellStyles[row][col] = {};
     } else {
-      throw new Error('Ungültige Zellenkoordinaten');
+      throw new Error('Invalid cell coordinates');
     }
   }
 
-  // Methode zum Hinzufügen einer neuen Zeile
+  // Method to add a new row
   addRow(): void {
     this.options.rows += 1;
     this.data.push(Array(this.options.columns).fill(''));
     this.cellStyles.push(Array(this.options.columns).fill({}));
   }
 
-  // Methode zum Hinzufügen einer neuen Spalte
+  // Method to add a new column
   addColumn(): void {
     this.options.columns += 1;
     this.data.forEach((row) => row.push(''));
     this.cellStyles.forEach((row) => row.push({}));
   }
 
-  // Methode zum Entfernen einer Zeile
+  // Method to remove a row
   removeRow(row: number): void {
     if (row < this.options.rows) {
       this.data.splice(row, 1);
       this.cellStyles.splice(row, 1);
       this.options.rows -= 1;
     } else {
-      throw new Error('Ungültige Zeilenkoordinate');
+      throw new Error('Invalid row coordinate');
     }
   }
 
-  // Methode zum Entfernen einer Spalte
+  // Method to remove a column
   removeColumn(col: number): void {
     if (col < this.options.columns) {
       this.data.forEach((row) => row.splice(col, 1));
       this.cellStyles.forEach((row) => row.splice(col, 1));
       this.options.columns -= 1;
     } else {
-      throw new Error('Ungültige Spaltenkoordinate');
+      throw new Error('Invalid column coordinate');
     }
   }
 
-  // Hilfsfunktion zur Validierung von Base64-Daten
+  // Helper function to validate Base64 data
   private isValidBase64(base64: string): boolean {
     const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
     return base64Regex.test(base64);
   }
 
-  // Hilfsfunktion zur Umwandlung von Base64 in Uint8Array
+  // Helper function to convert Base64 to Uint8Array
   private base64ToUint8Array(base64: string): Uint8Array {
     if (!this.isValidBase64(base64)) {
-      throw new Error('Ungültige Base64-Daten');
+      throw new Error('Invalid Base64 data');
     }
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -153,7 +153,7 @@ export class PdfTable {
     return bytes;
   }
 
-  // Neue Methode: Normalisierung von Farbwerten
+  // New method: normalize color values
   private normalizeColor(color: { r: number; g: number; b: number }): {
     r: number;
     g: number;
@@ -166,37 +166,37 @@ export class PdfTable {
     };
   }
 
-  // Erzeugen eines PDF Dokuments mit der Tabelle inklusive Zell-Styling
+  // Create a PDF document with the table including cell styling
   async toPDF(): Promise<PDFDocument> {
     const pdfDoc = await PDFDocument.create();
-    let pdfFont; // Wird entweder durch CustomFont oder als Fallback gesetzt
+    let pdfFont; // Will be set either by CustomFont or as a fallback
     if (this.customFont) {
       const fontData = this.base64ToUint8Array(this.customFont.base64);
       pdfFont = await pdfDoc.embedFont(fontData, { customName: this.customFont.name });
     } else {
-      // Fallback auf einen Standardfont
+      // Fallback to a standard font
       pdfFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
     }
     let page = pdfDoc.addPage();
     const { height } = page.getSize();
 
-    // Startposition für die Tabelle
+    // Start position for the table
     const startX = 50;
     let currentY = height - 50;
     const { rowHeight = 20, colWidth = 80 } = this.options;
 
-    // Iteriere über jede Zeile und Spalte
+    // Iterate over each row and column
     for (let row = 0; row < this.options.rows; row++) {
-      // Erzeuge neue Seite, wenn nicht genügend Platz vorhanden ist
+      // Create a new page if there is not enough space
       if (currentY - rowHeight < 50) {
         page = pdfDoc.addPage();
         currentY = page.getSize().height - 50;
       }
       let x = startX;
       for (let col = 0; col < this.options.columns; col++) {
-        // Prüfe, ob diese Zelle Teil einer zusammengeführten Zelle ist
+        // Check if this cell is part of a merged cell
         const merged = this.mergedCells.find((mc) => mc.startRow === row && mc.startCol === col);
-        // Falls zusammengeführt, berechne Gesamthöhe und Breite
+        // If merged, calculate total height and width
         let cellWidth = colWidth;
         let cellHeight = rowHeight;
         if (merged) {
@@ -204,10 +204,10 @@ export class PdfTable {
           cellHeight = rowHeight * (merged.endRow - merged.startRow + 1);
         }
 
-        // Zusammenführen des individuellen Zellenstils mit den Designdefaults
+        // Merge the individual cell style with the design defaults
         const style = { ...this.designConfig, ...this.cellStyles[row][col] };
 
-        // Zeichne Hintergrund, Text, Rand etc. nur für nicht übersprungene Zellen
+        // Draw background, text, border, etc. only for non-skipped cells
         if (!merged || (merged && row === merged.startRow && col === merged.startCol)) {
           if (style.backgroundColor) {
             const bg = this.normalizeColor(style.backgroundColor);
@@ -224,26 +224,26 @@ export class PdfTable {
           const normTextColor = this.normalizeColor(textColor);
           const text = this.data[row][col];
 
-          // Berechne Textbreite, falls möglich
+          // Calculate text width if possible
           let textWidth = text.length * fontSize * 0.6;
           if (pdfFont.widthOfTextAtSize) {
             textWidth = pdfFont.widthOfTextAtSize(text, fontSize);
           }
 
-          // Bestimme den x-Wert basierend auf der Ausrichtung
+          // Determine the x value based on alignment
           let textX = x + 5;
           if (style.alignment === 'center') {
             textX = x + (cellWidth - textWidth) / 2;
           } else if (style.alignment === 'right') {
             textX = x + cellWidth - textWidth - 5;
           }
-          // Falls ein CustomFont verfügbar ist, wird dieser genutzt
+          // If a CustomFont is available, it will be used
           page.drawText(text, {
             x: textX,
             y: currentY - cellHeight + (cellHeight - fontSize) / 2,
             size: fontSize,
             color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
-            font: pdfFont, // undefined, wenn kein CustomFont gesetzt
+            font: pdfFont, // undefined if no CustomFont is set
           });
           if (style.borderColor && style.borderWidth) {
             const normBorderColor = this.normalizeColor(style.borderColor);

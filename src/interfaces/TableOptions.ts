@@ -12,8 +12,7 @@ import { DesignConfig } from '../config/DesignConfig';
 export interface TableOptions {
   columns: number;
   rows: number;
-  rowHeight?: number; // Höhe einer Zeile (Standardwert wird gesetzt)
-  colWidth?: number; // Breite einer Spalte (Standardwert wird gesetzt)
-  // Neue Option: abstrakte Designkonfiguration
+  rowHeight?: number; // Height of a row (default value will be set)
+  colWidth?: number; // Width of a column (default value will be set)
   designConfig?: DesignConfig;
 }
