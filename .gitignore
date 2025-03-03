@@ -13,3 +13,5 @@ coverage/
 # Environment
 .env
 .DS_Store
+
+*.pdf

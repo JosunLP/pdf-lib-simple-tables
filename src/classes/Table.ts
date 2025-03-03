@@ -77,8 +77,11 @@ export class PdfTable {
     this.mergedCells.push({ startRow, startCol, endRow, endCol });
   }
 
-  // Neue Methode zum Setzen eines benutzerdefinierten Fonts
+  // Methode zum Setzen eines benutzerdefinierten Fonts
   setCustomFont(font: CustomFont): void {
+    if (!this.isValidBase64(font.base64)) {
+      throw new Error('Ungültige Base64-Daten');
+    }
     this.customFont = font;
   }
 
