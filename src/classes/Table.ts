@@ -214,7 +214,7 @@ export class PdfTable {
               y: currentY - cellHeight,
               width: cellWidth,
               height: cellHeight,
-              color: rgb(style.backgroundColor.r, style.backgroundColor.g, style.backgroundColor.b),
+              color: rgb(style.backgroundColor.r / 255, style.backgroundColor.g / 255, style.backgroundColor.b / 255),
             });
           }
           const fontSize = style.fontSize || 12;
@@ -239,7 +239,7 @@ export class PdfTable {
             x: textX,
             y: currentY - cellHeight + (cellHeight - fontSize) / 2,
             size: fontSize,
-            color: rgb(textColor.r, textColor.g, textColor.b),
+            color: rgb(textColor.r / 255, textColor.g / 255, textColor.b / 255),
             font: pdfFont, // undefined, wenn kein CustomFont gesetzt
           });
           if (style.borderColor && style.borderWidth) {
@@ -248,7 +248,7 @@ export class PdfTable {
               y: currentY - cellHeight,
               width: cellWidth,
               height: cellHeight,
-              borderColor: rgb(style.borderColor.r, style.borderColor.g, style.borderColor.b),
+              borderColor: rgb(style.borderColor.r / 255, style.borderColor.g / 255, style.borderColor.b / 255),
               borderWidth: style.borderWidth,
               opacity: 0,
             });
