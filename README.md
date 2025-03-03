@@ -88,6 +88,27 @@ table.removeRow(0);
 table.removeColumn(0);
 ```
 
+### Design Templates
+
+You can use predefined design templates like Material Design:
+
+```typescript
+import { PdfTable, materialDesignConfig } from 'pdfjs-table-lib';
+
+const table = new PdfTable({
+  columns: 3,
+  rows: 5,
+  designConfig: materialDesignConfig,
+});
+
+table.setCell(0, 0, 'Header 1');
+table.setCell(0, 1, 'Header 2');
+table.setCell(0, 2, 'Header 3');
+
+const pdfDoc = await table.toPDF();
+const pdfBytes = await pdfDoc.save();
+```
+
 ## API
 
 ### Classes
