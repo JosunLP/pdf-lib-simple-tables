@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { CustomFont } from '../models/CustomFont';
+import { defaultDesignConfig, DesignConfig } from '../config/DesignConfig';
 
 // Neue Interfaces zur Definition von Zellenstilen und zusammengeführten Zellen
 export interface TableCellStyle {
@@ -24,7 +25,8 @@ export interface TableOptions {
   rows: number;
   rowHeight?: number; // Höhe einer Zeile (Standardwert wird gesetzt)
   colWidth?: number; // Breite einer Spalte (Standardwert wird gesetzt)
-  // ...weitere Optionen für Flexibilität...
+  // Neue Option: abstrakte Designkonfiguration
+  designConfig?: DesignConfig;
 }
 
 export class PdfTable {
@@ -33,14 +35,16 @@ export class PdfTable {
   private cellStyles: TableCellStyle[][] = []; // Matrix für Zellenstile
   private mergedCells: MergedCell[] = [];
   private customFont?: CustomFont;
+  private designConfig: DesignConfig; // neue Eigenschaft
 
   constructor(options: TableOptions) {
-    // Setze Default-Werte falls nicht vorhanden
+    // Setze Default-Werte falls nicht vorhanden und mergen Designconfig
     this.options = {
       rowHeight: 20,
       colWidth: 80,
       ...options,
     };
+    this.designConfig = { ...defaultDesignConfig, ...options.designConfig };
     this.initData();
   }
 
@@ -167,6 +171,15 @@ export class PdfTable {
     return bytes;
   }
 
+  // Neue Methode: Normalisierung von Farbwerten
+  private normalizeColor(color: { r: number; g: number; b: number }): { r: number; g: number; b: number } {
+    return {
+      r: color.r > 1 ? color.r / 255 : color.r,
+      g: color.g > 1 ? color.g / 255 : color.g,
+      b: color.b > 1 ? color.b / 255 : color.b,
+    };
+  }
+
   // Erzeugen eines PDF Dokuments mit der Tabelle inklusive Zell-Styling
   async toPDF(): Promise<PDFDocument> {
     const pdfDoc = await PDFDocument.create();
@@ -205,20 +218,24 @@ export class PdfTable {
           cellHeight = rowHeight * (merged.endRow - merged.startRow + 1);
         }
 
+        // Zusammenführen des individuellen Zellenstils mit den Designdefaults
+        const style = { ...this.designConfig, ...this.cellStyles[row][col] };
+
         // Zeichne Hintergrund, Text, Rand etc. nur für nicht übersprungene Zellen
-        const style = this.cellStyles[row][col] || {};
         if (!merged || (merged && row === merged.startRow && col === merged.startCol)) {
           if (style.backgroundColor) {
+            const bg = this.normalizeColor(style.backgroundColor);
             page.drawRectangle({
               x,
               y: currentY - cellHeight,
               width: cellWidth,
               height: cellHeight,
-              color: rgb(style.backgroundColor.r / 255, style.backgroundColor.g / 255, style.backgroundColor.b / 255),
+              color: rgb(bg.r, bg.g, bg.b),
             });
           }
           const fontSize = style.fontSize || 12;
           const textColor = style.fontColor || { r: 0, g: 0, b: 0 };
+          const normTextColor = this.normalizeColor(textColor);
           const text = this.data[row][col];
 
           // Berechne Textbreite, falls möglich
@@ -239,16 +256,17 @@ export class PdfTable {
             x: textX,
             y: currentY - cellHeight + (cellHeight - fontSize) / 2,
             size: fontSize,
-            color: rgb(textColor.r / 255, textColor.g / 255, textColor.b / 255),
+            color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
             font: pdfFont, // undefined, wenn kein CustomFont gesetzt
           });
           if (style.borderColor && style.borderWidth) {
+            const normBorderColor = this.normalizeColor(style.borderColor);
             page.drawRectangle({
               x,
               y: currentY - cellHeight,
               width: cellWidth,
               height: cellHeight,
-              borderColor: rgb(style.borderColor.r / 255, style.borderColor.g / 255, style.borderColor.b / 255),
+              borderColor: rgb(normBorderColor.r, normBorderColor.g, normBorderColor.b),
               borderWidth: style.borderWidth,
               opacity: 0,
             });
