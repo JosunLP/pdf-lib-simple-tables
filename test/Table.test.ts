@@ -1,5 +1,6 @@
-import { PdfTable, TableOptions } from '../src/classes/Table';
+import { PdfTable } from '../src/classes/Table';
 import { PDFDocument } from 'pdf-lib';
+import { TableOptions } from '../src/interfaces/TableOptions';
 
 function createTable(): PdfTable {
   const options: TableOptions = { columns: 4, rows: 4, rowHeight: 20, colWidth: 80 };

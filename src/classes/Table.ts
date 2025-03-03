@@ -1,34 +1,16 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { CustomFont } from '../models/CustomFont';
 import { defaultDesignConfig, DesignConfig } from '../config/DesignConfig';
+import { MergedCell } from '../interfaces/MergedCell';
+import { TableCellStyle } from '../interfaces/TableCellStyle';
+import { TableOptions } from '../interfaces/TableOptions';
 
-// Neue Interfaces zur Definition von Zellenstilen und zusammengeführten Zellen
-export interface TableCellStyle {
-  fontSize?: number;
-  fontColor?: { r: number; g: number; b: number };
-  backgroundColor?: { r: number; g: number; b: number };
-  borderColor?: { r: number; g: number; b: number };
-  borderWidth?: number;
-  alignment?: 'left' | 'center' | 'right';
-}
-
-export interface MergedCell {
-  startRow: number;
-  startCol: number;
-  endRow: number;
-  endCol: number;
-}
-
-// Erweiterte Optionen für Tabelle
-export interface TableOptions {
-  columns: number;
-  rows: number;
-  rowHeight?: number; // Höhe einer Zeile (Standardwert wird gesetzt)
-  colWidth?: number; // Breite einer Spalte (Standardwert wird gesetzt)
-  // Neue Option: abstrakte Designkonfiguration
-  designConfig?: DesignConfig;
-}
-
+/**
+ * Pdf table
+ * @param {TableOptions} options - Table options
+ * @example
+ * const pdfTable = new PdfTable({ columns: 3, rows: 3 });
+ */
 export class PdfTable {
   private options: TableOptions;
   private data: string[][] = [];
@@ -172,7 +154,11 @@ export class PdfTable {
   }
 
   // Neue Methode: Normalisierung von Farbwerten
-  private normalizeColor(color: { r: number; g: number; b: number }): { r: number; g: number; b: number } {
+  private normalizeColor(color: { r: number; g: number; b: number }): {
+    r: number;
+    g: number;
+    b: number;
+  } {
     return {
       r: color.r > 1 ? color.r / 255 : color.r,
       g: color.g > 1 ? color.g / 255 : color.g,
@@ -279,6 +265,4 @@ export class PdfTable {
 
     return pdfDoc;
   }
-
-  // ...weitere Methoden zur Erweiterung und Anpassung der Tabelle...
 }
