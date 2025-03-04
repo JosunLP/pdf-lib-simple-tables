@@ -90,14 +90,14 @@ table.removeColumn(0);
 
 ### Design Templates
 
-PDF.js Table Library bietet nun mehrere Design Templates:
+PDF.js Table Library now offers multiple design templates:
 
 - `materialDesignConfig`: Material Design.
-- `classicDesignConfig`: Klassischer Look mit Serifenschrift.
-- `modernDesignConfig`: Moderner, minimalistischer Stil.
-- `highContrastDesignConfig`: Hoher Kontrast für verbesserte Lesbarkeit.
+- `classicDesignConfig`: Classic look with serif font.
+- `modernDesignConfig`: Modern, minimalist style.
+- `highContrastDesignConfig`: High contrast for improved readability.
 
-Beispiel:
+Example:
 
 ```typescript
 import { PdfTable, modernDesignConfig } from 'pdfjs-table-lib';
@@ -109,19 +109,19 @@ const table = new PdfTable({
 });
 
 table.setCell(0, 0, 'Header 1');
-// ...weitere Zellzuweisungen...
+// ...more cell assignments...
 
 const pdfDoc = await table.toPDF();
 const pdfBytes = await pdfDoc.save();
 ```
 
-## Erweiterte Funktionen
+## Advanced Features
 
-Die Bibliothek unterstützt nun auch das Einbetten von Tabellen in bereits bestehende PDF-Dokumente – sowohl als echte, formatierte Tabellen als auch alternativ als eingebettetes Bild.
+The library now also supports embedding tables into existing PDF documents – both as real, formatted tables and alternatively as embedded images.
 
-### Echte Tabellen einbetten
+### Embedding Real Tables
 
-Verwenden Sie die Methode `embedInPDF`, um die Tabelle in ein bestehendes PDF-Dokument einzufügen:
+Use the `embedInPDF` method to insert the table into an existing PDF document:
 
 ```typescript
 import { PDFDocument } from 'pdf-lib';
@@ -131,15 +131,15 @@ async function embedTable() {
   const existingPdf = await PDFDocument.load(existingPdfBytes);
   const table = new PdfTable({ columns: 4, rows: 4, rowHeight: 20, colWidth: 80 });
   table.setCell(0, 0, 'Header 1');
-  // ...weitere Zellzuweisungen...
+  // ...more cell assignments...
   await table.embedInPDF(existingPdf, { x: 50, y: 300 });
   const updatedPdfBytes = await existingPdf.save();
 }
 ```
 
-### Tabelle als Bild einbetten
+### Embedding Table as Image
 
-Alternativ können Sie den Tabelleninhalt als Bild in Ihr PDF einbetten. Dazu erzeugen Sie zunächst ein Bild (z. B. über einen Canvas-Renderer) und verwenden dann `embedTableAsImage`:
+Alternatively, you can embed the table content as an image in your PDF. First, generate an image (e.g., via a canvas renderer) and then use `embedTableAsImage`:
 
 ```typescript
 import { PDFDocument } from 'pdf-lib';
@@ -148,16 +148,16 @@ import { PdfTable } from 'pdfjs-table-lib';
 async function embedTableImage() {
   const existingPdf = await PDFDocument.load(existingPdfBytes);
   const table = new PdfTable({ columns: 4, rows: 4, rowHeight: 20, colWidth: 80 });
-  // ...Tabellendaten setzen...
+  // ...set table data...
 
-  // Angenommen, imageBytes enthält das PNG-Bild der Tabelle
-  const imageBytes = await generateTableImageBytes(table); // Implementierung extern
+  // Assume imageBytes contains the PNG image of the table
+  const imageBytes = await generateTableImageBytes(table); // External implementation
   await table.embedTableAsImage(existingPdf, imageBytes, { x: 50, y: 300, width: 320, height: 80 });
   const updatedPdfBytes = await existingPdf.save();
 }
 ```
 
-Weitere Details und Optionen finden Sie in der API-Dokumentation unten.
+For more details and options, see the API documentation below.
 
 ## API
 
