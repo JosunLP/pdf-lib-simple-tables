@@ -9,9 +9,9 @@ The PDF-lib Table Library is a TypeScript library that allows you to create and 
 Use npm or yarn to install the library:
 
 ```bash
-npm install pdfjs-table-lib
+npm install @josunlp/pdf-lib-table
 # or
-yarn add pdfjs-table-lib
+yarn add @josunlp/pdf-lib-table
 ```
 
 ## Usage
@@ -19,7 +19,7 @@ yarn add pdfjs-table-lib
 ### Basic Example
 
 ```typescript
-import { PdfTable } from 'pdfjs-table-lib';
+import { PdfTable } from '@josunlp/pdf-lib-table';
 
 const table = new PdfTable({
   columns: 3,
@@ -58,7 +58,7 @@ table.mergeCells(1, 0, 1, 2);
 #### Custom Fonts
 
 ```typescript
-import { CustomFont } from 'pdfjs-table-lib';
+import { CustomFont } from '@josunlp/pdf-lib-table';
 
 const customFont = new CustomFont('MyFont', 'base64-encoded-font-data');
 table.setCustomFont(customFont);
@@ -100,7 +100,7 @@ PDF-lib Table Library now offers multiple design templates:
 Example:
 
 ```typescript
-import { PdfTable, modernDesignConfig } from 'pdfjs-table-lib';
+import { PdfTable, modernDesignConfig } from '@josunlp/pdf-lib-table';
 
 const table = new PdfTable({
   columns: 3,
@@ -125,7 +125,7 @@ Use the `embedInPDF` method to insert the table into an existing PDF document:
 
 ```typescript
 import { PDFDocument } from 'pdf-lib';
-import { PdfTable } from 'pdfjs-table-lib';
+import { PdfTable } from '@josunlp/pdf-lib-table';
 
 async function embedTable() {
   const existingPdf = await PDFDocument.load(existingPdfBytes);
@@ -143,7 +143,7 @@ Alternatively, you can embed the table content as an image in your PDF. First, g
 
 ```typescript
 import { PDFDocument } from 'pdf-lib';
-import { PdfTable } from 'pdfjs-table-lib';
+import { PdfTable } from '@josunlp/pdf-lib-table';
 
 async function embedTableImage() {
   const existingPdf = await PDFDocument.load(existingPdfBytes);

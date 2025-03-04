@@ -1,5 +1,5 @@
 {
-  "name": "pdflib-table",
+  "name": "@josunlp/pdf-lib-table",
   "version": "1.0.0",
   "description": "TS Bibliothek zur Erstellung von Tabellen auf Basis von pdf-lib",
   "main": "dist/index.js",
