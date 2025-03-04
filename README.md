@@ -126,7 +126,7 @@ async function embedTable() {
   const table = new PdfTable({ columns: 4, rows: 4, rowHeight: 20, colWidth: 80 });
   table.setCell(0, 0, 'Header 1');
   // ...weitere Zellzuweisungen...
-  await table.embedInPDF(existingPdf , x = 50, y = 300);
+  await table.embedInPDF(existingPdf, { x: 50, y: 300 });
   const updatedPdfBytes = await existingPdf.save();
 }
 ```
