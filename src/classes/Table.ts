@@ -49,7 +49,8 @@ export class PdfTable {
   // New method to set an individual cell style
   setCellStyle(row: number, col: number, style: TableCellStyle): void {
     if (row < this.options.rows && col < this.options.columns) {
-      this.cellStyles[row][col] = { ...this.cellStyles[row][col], ...style };
+      const effectiveStyle = this.getEffectiveCellStyle(row, col, style);
+      this.cellStyles[row][col] = { ...this.cellStyles[row][col], ...effectiveStyle };
     }
   }
 
@@ -266,24 +267,24 @@ export class PdfTable {
     return pdfDoc;
   }
 
-  // Neue Methode: Tabelle in ein bestehendes PDF-Dokument einbetten (als echte Tabelle)
+  // New method: Embed table in an existing PDF document (as a real table)
   async embedInPDF(existingDoc: PDFDocument, startX: number, startY: number): Promise<PDFDocument> {
-    // Verwende hier zur Vereinfachung einen neuen Seitenzusatz
+    // For simplicity, use a new page addition
     let page = existingDoc.addPage();
-    let currentY = startY; // Verwende übergebene Y-Koordinate
+    let currentY = startY; // Use the passed Y coordinate
     const rowHeight = this.options.rowHeight || 20;
     const colWidth = this.options.colWidth || 80;
     const pdfFont = await existingDoc.embedFont(StandardFonts.Helvetica);
 
     for (let row = 0; row < this.options.rows; row++) {
-      // Bei ungenügendem Platz wird eine neue Seite hinzugefügt, wobei der obere Rand wiederhergestellt wird.
+      // If there is not enough space, add a new page and restore the top margin.
       if (currentY - rowHeight < 50) {
         page = existingDoc.addPage();
         currentY = page.getSize().height - 50;
       }
-      let x = startX; // Verwende übergebene X-Koordinate
+      let x = startX; // Use the passed X coordinate
       for (let col = 0; col < this.options.columns; col++) {
-        // Zeichne Zellinhalte – hier können auch weitere Styles integriert werden.
+        // Draw cell contents – additional styles can be integrated here.
         const text = this.data[row][col];
         page.drawText(text, {
           x: x + 5,
@@ -299,8 +300,8 @@ export class PdfTable {
     return existingDoc;
   }
 
-  // Neue Methode: Tabelle als Bild in ein bestehendes PDF-Dokument einbetten
-  // Es wird erwartet, dass imageBytes (z. B. eine PNG-Repräsentation der Tabelle) übergeben werden.
+  // New method: Embed the table as an image in an existing PDF document
+  // It is expected that imageBytes (e.g., a PNG representation of the table) are passed in.
   async embedTableAsImage(
     existingDoc: PDFDocument,
     imageBytes: Uint8Array,
@@ -315,5 +316,30 @@ export class PdfTable {
       height: options.height,
     });
     return existingDoc;
+  }
+
+  private getEffectiveCellStyle(
+    row: number,
+    col: number,
+    userStyle: TableCellStyle,
+  ): TableCellStyle {
+    // Start with the style provided by the user or design
+    let effectiveStyle: TableCellStyle = { ...userStyle };
+
+    // If the first row (heading row), merge with headingRowStyle
+    if (row === 0 && this.designConfig.headingRowStyle) {
+      effectiveStyle = {
+        ...effectiveStyle,
+        ...this.designConfig.headingRowStyle,
+      } as TableCellStyle;
+    }
+    // If the first column (heading column), merge with headingColumnStyle
+    if (col === 0 && this.designConfig.headingColumnStyle) {
+      effectiveStyle = {
+        ...effectiveStyle,
+        ...this.designConfig.headingColumnStyle,
+      } as TableCellStyle;
+    }
+    return effectiveStyle;
   }
 }

@@ -90,20 +90,26 @@ table.removeColumn(0);
 
 ### Design Templates
 
-You can use predefined design templates like Material Design:
+PDF.js Table Library bietet nun mehrere Design Templates:
+
+- `materialDesignConfig`: Material Design.
+- `classicDesignConfig`: Klassischer Look mit Serifenschrift.
+- `modernDesignConfig`: Moderner, minimalistischer Stil.
+- `highContrastDesignConfig`: Hoher Kontrast für verbesserte Lesbarkeit.
+
+Beispiel:
 
 ```typescript
-import { PdfTable, materialDesignConfig } from 'pdfjs-table-lib';
+import { PdfTable, modernDesignConfig } from 'pdfjs-table-lib';
 
 const table = new PdfTable({
   columns: 3,
   rows: 5,
-  designConfig: materialDesignConfig,
+  designConfig: modernDesignConfig,
 });
 
 table.setCell(0, 0, 'Header 1');
-table.setCell(0, 1, 'Header 2');
-table.setCell(0, 2, 'Header 3');
+// ...weitere Zellzuweisungen...
 
 const pdfDoc = await table.toPDF();
 const pdfBytes = await pdfDoc.save();

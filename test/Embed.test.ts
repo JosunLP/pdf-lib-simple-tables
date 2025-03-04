@@ -5,25 +5,25 @@ function createTable(): PdfTable {
   return new PdfTable({ columns: 4, rows: 4, rowHeight: 20, colWidth: 80 });
 }
 
-test('embedInPDF: sollte eine Tabelle an übergebenen Koordinaten einbetten', async () => {
+test('embedInPDF: should embed a table at given coordinates', async () => {
   const table = createTable();
   const pdfDoc = await PDFDocument.create();
-  // Vorhandene Seitenanzahl erfassen (muss 0 sein, da PDF neu erstellt wurde)
+  // Capture the initial number of pages (should be 0 since the PDF is newly created)
   const initialPages = pdfDoc.getPageCount();
-  // Verwende bereitgestellte Koordinaten
+  // Use provided coordinates
   await table.embedInPDF(pdfDoc, 100, 700);
   expect(pdfDoc.getPageCount()).toBeGreaterThan(initialPages);
 });
 
-test('embedTableAsImage: sollte eine Tabelle als Bild einbetten', async () => {
+test('embedTableAsImage: should embed a table as an image', async () => {
   const table = createTable();
   const pdfDoc = await PDFDocument.create();
   const initialPages = pdfDoc.getPageCount();
 
-  // Dummy 1x1 transparente PNG als Base64
+  // Dummy 1x1 transparent PNG as Base64
   const pngBase64 =
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==';
-  // Konvertiere Base64 in Uint8Array
+  // Convert Base64 to Uint8Array
   const buffer = Buffer.from(pngBase64, 'base64');
   const pngBytes = new Uint8Array(buffer);
 
