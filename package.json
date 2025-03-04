@@ -31,8 +31,13 @@
     "husky": "^8.0.3",
     "lint-staged": "^13.2.2"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "pdf-lib",
+    "table",
+    "pdf",
+    "typescript"
+  ],
+  "author": "Jonas Pfalzgraf <info@josunlp.de>",
   "license": "MIT",
   "volta": {
     "node": "22.14.0"
