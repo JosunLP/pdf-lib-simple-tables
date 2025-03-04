@@ -265,4 +265,55 @@ export class PdfTable {
 
     return pdfDoc;
   }
+
+  // Neue Methode: Tabelle in ein bestehendes PDF-Dokument einbetten (als echte Tabelle)
+  async embedInPDF(existingDoc: PDFDocument, startX: number, startY: number): Promise<PDFDocument> {
+    // Verwende hier zur Vereinfachung einen neuen Seitenzusatz
+    let page = existingDoc.addPage();
+    let currentY = startY; // Verwende übergebene Y-Koordinate
+    const rowHeight = this.options.rowHeight || 20;
+    const colWidth = this.options.colWidth || 80;
+    const pdfFont = await existingDoc.embedFont(StandardFonts.Helvetica);
+
+    for (let row = 0; row < this.options.rows; row++) {
+      // Bei ungenügendem Platz wird eine neue Seite hinzugefügt, wobei der obere Rand wiederhergestellt wird.
+      if (currentY - rowHeight < 50) {
+        page = existingDoc.addPage();
+        currentY = page.getSize().height - 50;
+      }
+      let x = startX; // Verwende übergebene X-Koordinate
+      for (let col = 0; col < this.options.columns; col++) {
+        // Zeichne Zellinhalte – hier können auch weitere Styles integriert werden.
+        const text = this.data[row][col];
+        page.drawText(text, {
+          x: x + 5,
+          y: currentY - rowHeight + 5,
+          size: 12,
+          font: pdfFont,
+          color: rgb(0, 0, 0),
+        });
+        x += colWidth;
+      }
+      currentY -= rowHeight;
+    }
+    return existingDoc;
+  }
+
+  // Neue Methode: Tabelle als Bild in ein bestehendes PDF-Dokument einbetten
+  // Es wird erwartet, dass imageBytes (z. B. eine PNG-Repräsentation der Tabelle) übergeben werden.
+  async embedTableAsImage(
+    existingDoc: PDFDocument,
+    imageBytes: Uint8Array,
+    options: { x: number; y: number; width: number; height: number },
+  ): Promise<PDFDocument> {
+    const pngImage = await existingDoc.embedPng(imageBytes);
+    const page = existingDoc.addPage();
+    page.drawImage(pngImage, {
+      x: options.x,
+      y: options.y,
+      width: options.width,
+      height: options.height,
+    });
+    return existingDoc;
+  }
 }

@@ -109,6 +109,50 @@ const pdfDoc = await table.toPDF();
 const pdfBytes = await pdfDoc.save();
 ```
 
+## Erweiterte Funktionen
+
+Die Bibliothek unterstützt nun auch das Einbetten von Tabellen in bereits bestehende PDF-Dokumente – sowohl als echte, formatierte Tabellen als auch alternativ als eingebettetes Bild.
+
+### Echte Tabellen einbetten
+
+Verwenden Sie die Methode `embedInPDF`, um die Tabelle in ein bestehendes PDF-Dokument einzufügen:
+
+```typescript
+import { PDFDocument } from 'pdf-lib';
+import { PdfTable } from 'pdfjs-table-lib';
+
+async function embedTable() {
+  const existingPdf = await PDFDocument.load(existingPdfBytes);
+  const table = new PdfTable({ columns: 4, rows: 4, rowHeight: 20, colWidth: 80 });
+  table.setCell(0, 0, 'Header 1');
+  // ...weitere Zellzuweisungen...
+  await table.embedInPDF(existingPdf , x = 50, y = 300);
+  const updatedPdfBytes = await existingPdf.save();
+}
+```
+
+### Tabelle als Bild einbetten
+
+Alternativ können Sie den Tabelleninhalt als Bild in Ihr PDF einbetten. Dazu erzeugen Sie zunächst ein Bild (z. B. über einen Canvas-Renderer) und verwenden dann `embedTableAsImage`:
+
+```typescript
+import { PDFDocument } from 'pdf-lib';
+import { PdfTable } from 'pdfjs-table-lib';
+
+async function embedTableImage() {
+  const existingPdf = await PDFDocument.load(existingPdfBytes);
+  const table = new PdfTable({ columns: 4, rows: 4, rowHeight: 20, colWidth: 80 });
+  // ...Tabellendaten setzen...
+
+  // Angenommen, imageBytes enthält das PNG-Bild der Tabelle
+  const imageBytes = await generateTableImageBytes(table); // Implementierung extern
+  await table.embedTableAsImage(existingPdf, imageBytes, { x: 50, y: 300, width: 320, height: 80 });
+  const updatedPdfBytes = await existingPdf.save();
+}
+```
+
+Weitere Details und Optionen finden Sie in der API-Dokumentation unten.
+
 ## API
 
 ### Classes
