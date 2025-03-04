@@ -31,11 +31,12 @@ export class PdfTable {
   }
 
   private initData(): void {
+    // Ändere cellStyles, um separate Objekte pro Zelle zu erzeugen
     this.data = Array.from({ length: this.options.rows }, () =>
       Array(this.options.columns).fill(''),
     );
     this.cellStyles = Array.from({ length: this.options.rows }, () =>
-      Array(this.options.columns).fill({}),
+      Array.from({ length: this.options.columns }, () => ({})),
     );
   }
 
@@ -46,11 +47,13 @@ export class PdfTable {
     }
   }
 
-  // New method to set an individual cell style
+  // Angepasste setCellStyle-Methode: nur den übergebenen Stil speichern
   setCellStyle(row: number, col: number, style: TableCellStyle): void {
     if (row < this.options.rows && col < this.options.columns) {
-      const effectiveStyle = this.getEffectiveCellStyle(row, col, style);
-      this.cellStyles[row][col] = { ...this.cellStyles[row][col], ...effectiveStyle };
+      // Direkte Zuweisung statt Merging mit Default-Stilen
+      this.cellStyles[row][col] = style;
+    } else {
+      throw new Error('Invalid cell coordinates');
     }
   }
 
@@ -269,6 +272,9 @@ export class PdfTable {
 
   // New method: Embed table in an existing PDF document (as a real table)
   async embedInPDF(existingDoc: PDFDocument, startX: number, startY: number): Promise<PDFDocument> {
+    if (startX < 0 || startY < 0) {
+      throw new Error('Invalid coordinates for embedInPDF');
+    }
     // For simplicity, use a new page addition
     let page = existingDoc.addPage();
     let currentY = startY; // Use the passed Y coordinate
@@ -300,14 +306,26 @@ export class PdfTable {
     return existingDoc;
   }
 
-  // New method: Embed the table as an image in an existing PDF document
-  // It is expected that imageBytes (e.g., a PNG representation of the table) are passed in.
+  // Angepasste embedTableAsImage-Methode: Fehlerbehandlung für ungültige Bilddaten
   async embedTableAsImage(
     existingDoc: PDFDocument,
     imageBytes: Uint8Array,
     options: { x: number; y: number; width: number; height: number },
   ): Promise<PDFDocument> {
-    const pngImage = await existingDoc.embedPng(imageBytes);
+    if (!(imageBytes instanceof Uint8Array) || imageBytes.length === 0) {
+      throw new Error('Invalid image data');
+    }
+    // Neue Validierung: PNG-Header prüfen
+    const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
+    if (imageBytes.length < 8 || !PNG_SIGNATURE.every((b, i) => imageBytes[i] === b)) {
+      throw new Error('Invalid image data');
+    }
+    let pngImage;
+    try {
+      pngImage = await existingDoc.embedPng(imageBytes);
+    } catch (error) {
+      throw new Error('Invalid image data');
+    }
     const page = existingDoc.addPage();
     page.drawImage(pngImage, {
       x: options.x,
@@ -323,22 +341,13 @@ export class PdfTable {
     col: number,
     userStyle: TableCellStyle,
   ): TableCellStyle {
-    // Start with the style provided by the user or design
     let effectiveStyle: TableCellStyle = { ...userStyle };
 
-    // If the first row (heading row), merge with headingRowStyle
     if (row === 0 && this.designConfig.headingRowStyle) {
-      effectiveStyle = {
-        ...effectiveStyle,
-        ...this.designConfig.headingRowStyle,
-      } as TableCellStyle;
+      effectiveStyle = { ...this.designConfig.headingRowStyle, ...effectiveStyle };
     }
-    // If the first column (heading column), merge with headingColumnStyle
     if (col === 0 && this.designConfig.headingColumnStyle) {
-      effectiveStyle = {
-        ...effectiveStyle,
-        ...this.designConfig.headingColumnStyle,
-      } as TableCellStyle;
+      effectiveStyle = { ...this.designConfig.headingColumnStyle, ...effectiveStyle };
     }
     return effectiveStyle;
   }

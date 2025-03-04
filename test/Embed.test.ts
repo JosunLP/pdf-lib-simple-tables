@@ -15,6 +15,12 @@ test('embedInPDF: should embed a table at given coordinates', async () => {
   expect(pdfDoc.getPageCount()).toBeGreaterThan(initialPages);
 });
 
+test('embedInPDF: should throw error for invalid coordinates', async () => {
+  const table = createTable();
+  const pdfDoc = await PDFDocument.create();
+  await expect(table.embedInPDF(pdfDoc, -100, -700)).rejects.toThrowError();
+});
+
 test('embedTableAsImage: should embed a table as an image', async () => {
   const table = createTable();
   const pdfDoc = await PDFDocument.create();
@@ -29,4 +35,13 @@ test('embedTableAsImage: should embed a table as an image', async () => {
 
   await table.embedTableAsImage(pdfDoc, pngBytes, { x: 50, y: 300, width: 320, height: 80 });
   expect(pdfDoc.getPageCount()).toBeGreaterThan(initialPages);
+});
+
+test('embedTableAsImage: should throw error for invalid image data', async () => {
+  const table = createTable();
+  const pdfDoc = await PDFDocument.create();
+  const invalidImageBytes = new Uint8Array([0, 1, 2, 3]);
+  await expect(
+    table.embedTableAsImage(pdfDoc, invalidImageBytes, { x: 50, y: 300, width: 320, height: 80 }),
+  ).rejects.toThrowError();
 });

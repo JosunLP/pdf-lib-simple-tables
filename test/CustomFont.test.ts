@@ -21,4 +21,8 @@ describe('CustomFont', () => {
     expect(font.base64).toBe(base64);
     expect(font.extension).toBeUndefined();
   });
+
+  test('sollte Fehler für ungültige Base64-Daten werfen', () => {
+    expect(() => new CustomFont('TestFont', 'invalid_base64')).toThrowError('Invalid Base64 data');
+  });
 });
