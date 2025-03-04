@@ -1,8 +1,8 @@
-# PDF.js Table Library
+# PDF-lib Table Library
 
 ## Overview
 
-The PDF.js Table Library is a TypeScript library that allows you to create and integrate tables into PDF documents. This library uses `pdf-lib` for PDF creation and offers advanced features such as custom fonts, cell styles, and cell merging.
+The PDF-lib Table Library is a TypeScript library that allows you to create and integrate tables into PDF documents. This library uses `pdf-lib` for PDF creation and offers advanced features such as custom fonts, cell styles, and cell merging.
 
 ## Installation
 
@@ -90,7 +90,7 @@ table.removeColumn(0);
 
 ### Design Templates
 
-PDF.js Table Library now offers multiple design templates:
+PDF-lib Table Library now offers multiple design templates:
 
 - `materialDesignConfig`: Material Design.
 - `classicDesignConfig`: Classic look with serif font.

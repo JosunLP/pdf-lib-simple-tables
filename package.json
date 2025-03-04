@@ -1,5 +1,5 @@
 {
-  "name": "pdfjs-table-lib",
+  "name": "pdflib-table",
   "version": "1.0.0",
   "description": "TS Bibliothek zur Erstellung von Tabellen auf Basis von pdf-lib",
   "main": "dist/index.js",
