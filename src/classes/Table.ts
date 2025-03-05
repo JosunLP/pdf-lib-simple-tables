@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { CustomFont } from '../models/CustomFont';
+import { isValidBase64 } from '../utils/validateBase64';
 import { defaultDesignConfig, DesignConfig } from '../config/DesignConfig';
 import { MergedCell } from '../interfaces/MergedCell';
 import { TableCellStyle } from '../interfaces/TableCellStyle';
@@ -18,6 +19,13 @@ export class PdfTable {
   private mergedCells: MergedCell[] = [];
   private customFont?: CustomFont;
   private designConfig: DesignConfig; // new property
+
+  // Neue Hilfsmethode zur Validierung der Zellindizes
+  private validateCellIndices(row: number, col: number): void {
+    if (row < 0 || row >= this.options.rows || col < 0 || col >= this.options.columns) {
+      throw new Error(`Invalid cell coordinates: row=${row}, col=${col}`);
+    }
+  }
 
   constructor(options: TableOptions) {
     // Set default values if not present and merge design config
@@ -42,19 +50,14 @@ export class PdfTable {
 
   // Method to fill a cell
   setCell(row: number, col: number, value: string): void {
-    if (row < this.options.rows && col < this.options.columns) {
-      this.data[row][col] = value;
-    }
+    this.validateCellIndices(row, col);
+    this.data[row][col] = value;
   }
 
   // Angepasste setCellStyle-Methode: nur den übergebenen Stil speichern
   setCellStyle(row: number, col: number, style: TableCellStyle): void {
-    if (row < this.options.rows && col < this.options.columns) {
-      // Direkte Zuweisung statt Merging mit Default-Stilen
-      this.cellStyles[row][col] = style;
-    } else {
-      throw new Error('Invalid cell coordinates');
-    }
+    this.validateCellIndices(row, col);
+    this.cellStyles[row][col] = style;
   }
 
   // New method to merge cells with validation
@@ -69,36 +72,29 @@ export class PdfTable {
 
   // Method to set a custom font
   setCustomFont(font: CustomFont): void {
-    if (!this.isValidBase64(font.base64)) {
-      throw new Error('Invalid Base64 data');
+    if (!isValidBase64(font.base64)) {
+      throw new Error(`Invalid Base64 data for font "${font.name}"`);
     }
     this.customFont = font;
   }
 
   // Method to read the content of a cell
   getCell(row: number, col: number): string {
-    if (row < this.options.rows && col < this.options.columns) {
-      return this.data[row][col];
-    }
-    throw new Error('Invalid cell coordinates');
+    this.validateCellIndices(row, col);
+    return this.data[row][col];
   }
 
   // Method to read the style of a cell
   getCellStyle(row: number, col: number): TableCellStyle {
-    if (row < this.options.rows && col < this.options.columns) {
-      return this.cellStyles[row][col];
-    }
-    throw new Error('Invalid cell coordinates');
+    this.validateCellIndices(row, col);
+    return this.cellStyles[row][col];
   }
 
   // Method to remove a cell
   removeCell(row: number, col: number): void {
-    if (row < this.options.rows && col < this.options.columns) {
-      this.data[row][col] = '';
-      this.cellStyles[row][col] = {};
-    } else {
-      throw new Error('Invalid cell coordinates');
-    }
+    this.validateCellIndices(row, col);
+    this.data[row][col] = '';
+    this.cellStyles[row][col] = {};
   }
 
   // Method to add a new row
@@ -137,15 +133,9 @@ export class PdfTable {
     }
   }
 
-  // Helper function to validate Base64 data
-  private isValidBase64(base64: string): boolean {
-    const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-    return base64Regex.test(base64);
-  }
-
   // Helper function to convert Base64 to Uint8Array
   private base64ToUint8Array(base64: string): Uint8Array {
-    if (!this.isValidBase64(base64)) {
+    if (!isValidBase64(base64)) {
       throw new Error('Invalid Base64 data');
     }
     const binaryString = atob(base64);
