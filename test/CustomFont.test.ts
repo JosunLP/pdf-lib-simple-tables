@@ -1,7 +1,7 @@
 import { CustomFont } from '../src/models/CustomFont';
 
 describe('CustomFont', () => {
-  test('sollte Instanz mit Name, Base64 und optionaler Extension erstellen', () => {
+  test('should create an instance with name, base64, and optional extension', () => {
     const name = 'TestFont';
     const base64 = 'dGVzdGJhc2U2NA==';
     const extension = 'ttf';
@@ -12,7 +12,7 @@ describe('CustomFont', () => {
     expect(font.extension).toBe(extension);
   });
 
-  test('sollte auch ohne Extension instanziiert werden können', () => {
+  test('should be instantiated without extension', () => {
     const name = 'TestFont';
     const base64 = 'dGVzdGJhc2U2NA==';
     const font = new CustomFont(name, base64);
@@ -22,7 +22,7 @@ describe('CustomFont', () => {
     expect(font.extension).toBeUndefined();
   });
 
-  test('sollte Fehler für ungültige Base64-Daten werfen', () => {
+  test('should throw error for invalid Base64 data', () => {
     expect(() => new CustomFont('TestFont', 'invalid_base64')).toThrowError('Invalid Base64 data');
   });
 });

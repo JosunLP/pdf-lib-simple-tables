@@ -157,6 +157,16 @@ async function embedTableImage() {
 }
 ```
 
+## Unterstützung von Node.js und Browser
+
+Dieses Projekt wird nun voll unterstützt in Node.js sowie in Browserumgebungen.  
+Für Browser verwenden Sie den Bundle in `build/index.browser.js` – dieser wird mittels Vite erstellt.  
+Sie können den Browser-Build mit folgender NPM-Script erzeugen:
+
+```bash
+npm run build:browser
+```
+
 For more details and options, see the API documentation below.
 
 ## API
@@ -209,19 +219,33 @@ For more details and options, see the API documentation below.
 - `endRow: number`
 - `endCol: number`
 
-## Development
+## Entwicklung
 
-### Prerequisites
+### Voraussetzungen
 
 - Node.js
-- npm or yarn
+- npm oder yarn
 
-### Installing Dependencies
+### Abhängigkeiten installieren
 
 ```bash
 npm install
-# or
+# oder
 yarn install
+```
+
+### Build
+
+Verwende Vite zum Erstellen des Bundles:
+
+```bash
+npm run build
+```
+
+Für den Browser-Build (IIFE-Format):
+
+```bash
+npm run build:browser
 ```
 
 ### Running Tests

@@ -2,9 +2,14 @@
   "name": "pdf-lib-simple-tables",
   "version": "1.0.0",
   "description": "TS Bibliothek zur Erstellung von Tabellen auf Basis von pdf-lib",
-  "main": "dist/index.js",
+  "main": "build/index.cjs",
+  "module": "build/index.js",
+  "browser": {
+    "./build/index.cjs": "./build/index.browser.js"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "vite build",
+    "build:browser": "vite build --format iife",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
@@ -23,13 +28,14 @@
     "@typescript-eslint/parser": "^5.59.2",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^9.1.0",
+    "husky": "^8.0.3",
     "jest": "^29.7.0",
+    "lint-staged": "^13.2.2",
     "prettier": "^2.8.8",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
-    "husky": "^8.0.3",
-    "lint-staged": "^13.2.2"
+    "vite": "^6.2.0"
   },
   "keywords": [
     "pdf-lib",

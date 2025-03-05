@@ -1,11 +1,11 @@
 import { PdfTable, CustomFont } from '../src/index';
 
 describe('Index Exports', () => {
-  test('sollte PdfTable exportieren', () => {
+  test('should export PdfTable', () => {
     expect(PdfTable).toBeDefined();
   });
 
-  test('sollte CustomFont exportieren', () => {
+  test('should export CustomFont', () => {
     expect(CustomFont).toBeDefined();
   });
 });
