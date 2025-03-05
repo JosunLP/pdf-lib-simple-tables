@@ -62,11 +62,13 @@ export class PdfTable {
 
   // New method to merge cells with validation
   mergeCells(startRow: number, startCol: number, endRow: number, endCol: number): void {
-    // Validation: start coordinates must be less than or equal to end coordinates
+    // Prüfung, ob beide Koordinaten gültig sind
+    this.validateCellIndices(startRow, startCol);
+    this.validateCellIndices(endRow, endCol);
     if (startRow > endRow || startCol > endCol) {
       throw new Error('Invalid cell coordinates for mergeCells');
     }
-    // ...further validations could be done here...
+    // ...weitere Validierungen falls nötig...
     this.mergedCells.push({ startRow, startCol, endRow, endCol });
   }
 
@@ -135,16 +137,18 @@ export class PdfTable {
 
   // Helper function to convert Base64 to Uint8Array
   private base64ToUint8Array(base64: string): Uint8Array {
-    if (!isValidBase64(base64)) {
-      throw new Error('Invalid Base64 data');
+    // Wenn Buffer vorhanden ist (Node-Umgebung), diesen verwenden
+    if (typeof Buffer !== 'undefined') {
+      return Uint8Array.from(Buffer.from(base64, 'base64'));
+    } else {
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes;
     }
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
   }
 
   // New method: normalize color values
@@ -198,8 +202,8 @@ export class PdfTable {
           cellHeight = rowHeight * (merged.endRow - merged.startRow + 1);
         }
 
-        // Merge the individual cell style with the design defaults
-        const style = { ...this.designConfig, ...this.cellStyles[row][col] };
+        // Statt manueller Zusammenführung der Stile:
+        const style = this.getEffectiveCellStyle(row, col, this.cellStyles[row][col]);
 
         // Draw background, text, border, etc. only for non-skipped cells
         if (!merged || (merged && row === merged.startRow && col === merged.startCol)) {
