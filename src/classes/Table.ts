@@ -268,6 +268,14 @@ export class PdfTable {
             // Verwenden des BorderRenderer für individuelle Rahmenlinien
             this.borderRenderer.drawCellBorders(page, x, currentY, cellWidth, cellHeight, style);
           }
+
+          // Zeichne zusätzliche Rahmenlinien (z. B. Trennstriche)
+          if (style.additionalBorders) {
+            style.additionalBorders.forEach((ab) => {
+              const yPos = currentY - ab.yOffset;
+              this.borderRenderer.drawBorderLine(page, x, yPos, x + cellWidth, yPos, ab.style);
+            });
+          }
         }
         x += colWidth;
       }

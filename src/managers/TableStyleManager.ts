@@ -46,6 +46,12 @@ export class TableStyleManager {
       effectiveStyle.leftBorder = { ...this.designConfig.defaultLeftBorder };
     }
 
+    // Merge additionalBorders aus DesignConfig und userStyle
+    effectiveStyle.additionalBorders = [
+      ...(this.designConfig.additionalBorders || []),
+      ...(userStyle.additionalBorders || []),
+    ];
+
     return effectiveStyle;
   }
 

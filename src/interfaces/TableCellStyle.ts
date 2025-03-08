@@ -17,6 +17,8 @@ export interface BorderStyle {
   dashPhase?: number;
 }
 
+import { AdditionalBorder } from './AdditionalBorder';
+
 /**
  * Table cell style
  * @interface TableCellStyle
@@ -30,6 +32,7 @@ export interface BorderStyle {
  * @property {BorderStyle} [rightBorder] - Right border style
  * @property {BorderStyle} [bottomBorder] - Bottom border style
  * @property {BorderStyle} [leftBorder] - Left border style
+ * @property {AdditionalBorder[]} [additionalBorders] - Neue Option für zusätzliche interne Rahmenlinien
  */
 export interface TableCellStyle {
   fontSize?: number;
@@ -44,4 +47,7 @@ export interface TableCellStyle {
   rightBorder?: BorderStyle;
   bottomBorder?: BorderStyle;
   leftBorder?: BorderStyle;
+
+  // Neue Option für zusätzliche interne Rahmenlinien
+  additionalBorders?: AdditionalBorder[];
 }
