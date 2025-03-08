@@ -1,3 +1,5 @@
+import { isValidBase64 } from '../utils/validateBase64';
+
 /**
  * Custom font model
  * @param name: string - font name
@@ -10,9 +12,8 @@
  */
 export class CustomFont {
   constructor(public name: string, public base64: string, public extension?: string) {
-    const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-    if (!base64Regex.test(base64)) {
-      throw new Error('Invalid Base64 data');
+    if (!isValidBase64(base64)) {
+      throw new Error(`Invalid Base64 data for font "${name}"`);
     }
   }
 }

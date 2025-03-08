@@ -13,6 +13,7 @@
  * @property {BorderStyle} [defaultRightBorder] - Default right border style
  * @property {BorderStyle} [defaultBottomBorder] - Default bottom border style
  * @property {BorderStyle} [defaultLeftBorder] - Default left border style
+ * @property {AdditionalBorder[]} [additionalBorders] - Additional borders
  */
 export interface DesignConfig {
   fontFamily?: string;
@@ -31,10 +32,14 @@ export interface DesignConfig {
   defaultRightBorder?: BorderStyle;
   defaultBottomBorder?: BorderStyle;
   defaultLeftBorder?: BorderStyle;
+
+  // New option for additional borders (e.g., for invoices)
+  additionalBorders?: AdditionalBorder[];
 }
 
-// Import BorderStyle definition
+// Import BorderStyle and AdditionalBorder definitions
 import { BorderStyle } from '../interfaces/TableCellStyle';
+import { AdditionalBorder } from '../interfaces/AdditionalBorder';
 
 /**
  * Default design config
@@ -100,6 +105,8 @@ export const defaultDesignConfig: DesignConfig = {
     width: 1,
     style: 'solid',
   },
+  // Default: no additional borders
+  additionalBorders: [],
 };
 
 /**

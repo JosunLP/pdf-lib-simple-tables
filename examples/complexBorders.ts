@@ -70,7 +70,7 @@ async function createComplexBordersTable(): Promise<void> {
     });
   }
 
-  // Summenzeile mit dickerem Unterstrich
+  // Summenzeile mit dickerem Unterstrich - nutzt jetzt modularisierte Rahmenrenderer
   table.setCell(4, 0, '');
   table.setCell(4, 1, '');
   table.setCell(4, 2, 'Summe:');
