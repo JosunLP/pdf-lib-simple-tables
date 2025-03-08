@@ -2,7 +2,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { CustomFont } from '../models/CustomFont';
 import { defaultDesignConfig, DesignConfig } from '../config/DesignConfig';
 import { MergedCell } from '../interfaces/MergedCell';
-import { TableCellStyle } from '../interfaces/TableCellStyle';
+import { BorderStyle, TableCellStyle } from '../interfaces/TableCellStyle';
 import { TableOptions } from '../interfaces/TableOptions';
 
 /**
@@ -223,6 +223,8 @@ export class PdfTable {
               color: rgb(bg.r, bg.g, bg.b),
             });
           }
+
+          // Draw text content
           const fontSize = style.fontSize || 12;
           const textColor = style.fontColor || { r: 0, g: 0, b: 0 };
           const normTextColor = this.normalizeColor(textColor);
@@ -241,15 +243,25 @@ export class PdfTable {
           } else if (style.alignment === 'right') {
             textX = x + cellWidth - textWidth - 5;
           }
-          // If a CustomFont is available, it will be used
+
+          // Draw text
           page.drawText(text, {
             x: textX,
             y: currentY - cellHeight + (cellHeight - fontSize) / 2,
             size: fontSize,
             color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
-            font: pdfFont, // undefined if no CustomFont is set
+            font: pdfFont,
           });
-          if (style.borderColor && style.borderWidth) {
+
+          // Draw cell borders - legacy method (for backward compatibility)
+          if (
+            style.borderColor &&
+            style.borderWidth &&
+            !style.topBorder &&
+            !style.rightBorder &&
+            !style.bottomBorder &&
+            !style.leftBorder
+          ) {
             const normBorderColor = this.normalizeColor(style.borderColor);
             page.drawRectangle({
               x,
@@ -260,6 +272,9 @@ export class PdfTable {
               borderWidth: style.borderWidth,
               opacity: 0,
             });
+          } else {
+            // Draw individual borders if specified
+            this.drawCellBorders(page, x, currentY, cellWidth, cellHeight, style);
           }
         }
         x += colWidth;
@@ -268,6 +283,151 @@ export class PdfTable {
     }
 
     return pdfDoc;
+  }
+
+  /**
+   * Draws individual borders for a cell based on specified border styles
+   */
+  private drawCellBorders(
+    page: any,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    style: TableCellStyle,
+  ): void {
+    // Helper to prepare border style
+    const prepareBorderStyle = (
+      borderStyle?: BorderStyle,
+      defaultColor?: any,
+      defaultWidth?: number,
+    ): BorderStyle | null => {
+      if (!borderStyle && !defaultColor) return null;
+
+      const display = borderStyle?.display !== false;
+      if (!display) return null;
+
+      return {
+        color: borderStyle?.color || defaultColor,
+        width: borderStyle?.width || defaultWidth || 1,
+        style: borderStyle?.style || 'solid',
+        dashArray: borderStyle?.dashArray,
+        dashPhase: borderStyle?.dashPhase || 0,
+      };
+    };
+
+    // Default border settings from legacy properties
+    const defaultColor = style.borderColor;
+    const defaultWidth = style.borderWidth;
+
+    // Prepare each border with fallbacks to legacy properties
+    const topBorder = prepareBorderStyle(style.topBorder, defaultColor, defaultWidth);
+    const rightBorder = prepareBorderStyle(style.rightBorder, defaultColor, defaultWidth);
+    const bottomBorder = prepareBorderStyle(style.bottomBorder, defaultColor, defaultWidth);
+    const leftBorder = prepareBorderStyle(style.leftBorder, defaultColor, defaultWidth);
+
+    // Draw each border if it's configured
+    if (topBorder) {
+      this.drawBorderLine(page, x, y, x + width, y, topBorder);
+    }
+
+    if (rightBorder) {
+      this.drawBorderLine(page, x + width, y, x + width, y - height, rightBorder);
+    }
+
+    if (bottomBorder) {
+      this.drawBorderLine(page, x, y - height, x + width, y - height, bottomBorder);
+    }
+
+    if (leftBorder) {
+      this.drawBorderLine(page, x, y, x, y - height, leftBorder);
+    }
+  }
+
+  /**
+   * Draws a single border line with the specified style
+   */
+  private drawBorderLine(
+    page: any,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    borderStyle: BorderStyle,
+  ): void {
+    const color = this.normalizeColor(borderStyle.color!);
+    const lineWidth = borderStyle.width || 1;
+
+    if (borderStyle.style === 'solid') {
+      page.drawLine({
+        start: { x: x1, y: y1 },
+        end: { x: x2, y: y2 },
+        thickness: lineWidth,
+        color: rgb(color.r, color.g, color.b),
+      });
+    } else if (borderStyle.style === 'dashed' || borderStyle.style === 'dotted') {
+      // Implement dashed or dotted lines
+      const dashLength = borderStyle.style === 'dashed' ? 5 : 2;
+      const gapLength = borderStyle.style === 'dashed' ? 3 : 2;
+
+      // Use custom dashArray if provided
+      const dashArray = borderStyle.dashArray || [dashLength, gapLength];
+      const dashPhase = borderStyle.dashPhase || 0;
+
+      // Calculate line length and angle
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+
+      // Draw dashed/dotted line
+      let remainingLength = length;
+      let pos = 0;
+      let index = dashPhase % dashArray.reduce((a, b) => a + b, 0);
+      let dashIndex = 0;
+
+      // Find starting dash segment based on dashPhase
+      while (index > 0 && dashIndex < dashArray.length) {
+        if (index >= dashArray[dashIndex]) {
+          index -= dashArray[dashIndex];
+          dashIndex = (dashIndex + 1) % dashArray.length;
+        } else {
+          break;
+        }
+      }
+
+      // Skip initial segment if needed
+      if (index > 0) {
+        pos += index;
+        remainingLength -= index;
+      }
+
+      // Draw dash segments
+      let isDrawing = dashIndex % 2 === 0; // Even indices are draws, odd are gaps
+
+      while (remainingLength > 0) {
+        const segmentLength = Math.min(dashArray[dashIndex], remainingLength);
+
+        if (isDrawing) {
+          const startX = x1 + Math.cos(angle) * pos;
+          const startY = y1 + Math.sin(angle) * pos;
+          const endX = x1 + Math.cos(angle) * (pos + segmentLength);
+          const endY = y1 + Math.sin(angle) * (pos + segmentLength);
+
+          page.drawLine({
+            start: { x: startX, y: startY },
+            end: { x: endX, y: endY },
+            thickness: lineWidth,
+            color: rgb(color.r, color.g, color.b),
+          });
+        }
+
+        pos += segmentLength;
+        remainingLength -= segmentLength;
+        dashIndex = (dashIndex + 1) % dashArray.length;
+        isDrawing = !isDrawing;
+      }
+    }
   }
 
   // New method: Embed table in an existing PDF document (as a real table)
