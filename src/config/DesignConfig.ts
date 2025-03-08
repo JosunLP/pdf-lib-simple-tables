@@ -9,23 +9,10 @@
  * @property {number} [borderWidth] - Border width
  * @property {Partial<DesignConfig>} [headingRowStyle] - Heading row style
  * @property {Partial<DesignConfig>} [headingColumnStyle] - Heading column style
- * @default
- * {
- *  fontFamily: 'Helvetica, Arial, sans-serif',
- * fontSize: 12,
- * fontColor: { r: 0, g: 0, b: 0 },
- * backgroundColor: { r: 255, g: 255, b: 255 },
- * borderColor: { r: 200, g: 200, b: 200 },
- * borderWidth: 1,
- * headingRowStyle: {
- *  backgroundColor: { r: 220, g: 220, b: 220 },
- *  fontSize: 13,
- * },
- * headingColumnStyle: {
- *  backgroundColor: { r: 240, g: 240, b: 240 },
- *  fontSize: 13,
- * }
- * }
+ * @property {BorderStyle} [defaultTopBorder] - Default top border style
+ * @property {BorderStyle} [defaultRightBorder] - Default right border style
+ * @property {BorderStyle} [defaultBottomBorder] - Default bottom border style
+ * @property {BorderStyle} [defaultLeftBorder] - Default left border style
  */
 export interface DesignConfig {
   fontFamily?: string;
@@ -38,7 +25,16 @@ export interface DesignConfig {
   // New options for headers
   headingRowStyle?: Partial<DesignConfig>;
   headingColumnStyle?: Partial<DesignConfig>;
+
+  // New default border style options
+  defaultTopBorder?: BorderStyle;
+  defaultRightBorder?: BorderStyle;
+  defaultBottomBorder?: BorderStyle;
+  defaultLeftBorder?: BorderStyle;
 }
+
+// Import BorderStyle definition
+import { BorderStyle } from '../interfaces/TableCellStyle';
 
 /**
  * Default design config
@@ -78,6 +74,31 @@ export const defaultDesignConfig: DesignConfig = {
     backgroundColor: { r: 240, g: 240, b: 240 },
     fontSize: 13,
     // further adjustments if needed...
+  },
+  // Default border configurations
+  defaultTopBorder: {
+    display: true,
+    color: { r: 200, g: 200, b: 200 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultRightBorder: {
+    display: true,
+    color: { r: 200, g: 200, b: 200 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultBottomBorder: {
+    display: true,
+    color: { r: 200, g: 200, b: 200 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultLeftBorder: {
+    display: true,
+    color: { r: 200, g: 200, b: 200 },
+    width: 1,
+    style: 'solid',
   },
 };
 
