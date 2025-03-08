@@ -1,4 +1,4 @@
-import { PDFDocument, PDFFont, rgb } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFFont, rgb } from 'pdf-lib';
 import { TableCellStyle } from '../interfaces/TableCellStyle';
 import { BorderRenderer } from './BorderRenderer';
 import { TableStyleManager } from '../managers/TableStyleManager';
@@ -70,7 +70,7 @@ export class TableRenderer {
    * Zeichnet eine einzelne Zelle
    */
   private drawCell(
-    page: any,
+    page: PDFPage,
     x: number,
     y: number,
     width: number,

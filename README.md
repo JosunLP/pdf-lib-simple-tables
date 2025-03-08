@@ -157,6 +157,49 @@ async function embedTableImage() {
 }
 ```
 
+## Architecture
+
+The library uses a modular architecture to separate concerns and improve maintainability:
+
+### Core Modules
+
+- **TableDataManager**: Manages the table data (cell content, styles, rows/columns)
+- **MergeCellManager**: Handles cell merging operations
+- **FontManager**: Manages custom fonts and font embedding
+- **TableStyleManager**: Applies and combines styles from different sources
+- **BorderRenderer**: Renders different types of borders (solid, dashed, dotted)
+- **TableRenderer**: Renders the complete table with all its elements
+- **ImageEmbedder**: Handles embedding tables as images in PDFs
+
+### Module Relationships
+
+The `PdfTable` class serves as a facade, coordinating these modules to provide a simple API for users. Each module has a specific responsibility:
+
+```
+┌───────────────────┐          ┌──────────────────┐
+│     PdfTable      │ uses     │  TableRenderer   │
+│   (Facade Class)  │ ◄────────┤                  │
+└───────────────────┘          └────────┬─────────┘
+         │                              │
+         │ delegates                    │ uses
+         ▼                              ▼
+┌───────────────────┐          ┌──────────────────┐
+│  TableDataManager  │          │  BorderRenderer  │
+└───────────────────┘          └──────────────────┘
+         │                              │
+         │                              │ uses
+         ▼                              ▼
+┌───────────────────┐          ┌──────────────────┐
+│  MergeCellManager  │          │  TableStyleManager │
+└───────────────────┘          └──────────────────┘
+         │                      
+         │                      
+         ▼                      
+┌───────────────────┐          ┌──────────────────┐
+│    FontManager    │          │   ImageEmbedder  │
+└───────────────────┘          └──────────────────┘
+```
+
 ## Node.js and Browser Support
 
 This project now fully supports both Node.js and browser environments.  
@@ -193,6 +236,38 @@ For more details and options, see the API documentation below.
 #### `CustomFont`
 
 - **Constructor**: `new CustomFont(name: string, base64: string, extension?: string)`
+
+### Core Modules (For Developers/Contributors)
+
+These modules are used internally by the `PdfTable` class:
+
+#### `TableDataManager`
+
+Manages table data and structure.
+
+#### `TableRenderer`
+
+Handles the rendering of tables to PDF.
+
+#### `BorderRenderer`
+
+Specializes in rendering different border styles.
+
+#### `TableStyleManager`
+
+Applies and combines cell styles.
+
+#### `MergeCellManager`
+
+Manages merged cells functionality.
+
+#### `FontManager`
+
+Handles font embedding and custom fonts.
+
+#### `ImageEmbedder`
+
+Embeds tables as images in PDFs.
 
 ### Interfaces
 
