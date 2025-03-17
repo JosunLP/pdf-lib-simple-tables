@@ -18,41 +18,123 @@ export class TableStyleManager {
    * indem Designkonfiguration und Benutzerstil kombiniert werden
    */
   getEffectiveCellStyle(row: number, col: number, userStyle: TableCellStyle): TableCellStyle {
-    let effectiveStyle: TableCellStyle = { ...userStyle };
+    // Basis-Stil aus der Design-Konfiguration
+    const baseStyle: TableCellStyle = {
+      // Grundlegende Stileigenschaften
+      fontSize: this.designConfig.fontSize,
+      fontColor: this.designConfig.fontColor,
+      backgroundColor: this.designConfig.backgroundColor,
+      borderColor: this.designConfig.borderColor,
+      borderWidth: this.designConfig.borderWidth,
 
-    // Anwenden von Kopfzeilenstilen, wenn anwendbar
-    if (row === 0 && this.designConfig.headingRowStyle) {
-      effectiveStyle = { ...this.designConfig.headingRowStyle, ...effectiveStyle };
-    }
-    if (col === 0 && this.designConfig.headingColumnStyle) {
-      effectiveStyle = { ...this.designConfig.headingColumnStyle, ...effectiveStyle };
-    }
+      // Zusätzliche Eigenschaften, die bisher fehlten oder nicht vollständig angewendet wurden
+      fontFamily: this.designConfig.fontFamily,
+      fontWeight: this.designConfig.fontWeight,
+      fontStyle: this.designConfig.fontStyle,
+      alignment: this.designConfig.alignment,
+      padding: this.designConfig.padding,
+      verticalAlignment: this.designConfig.verticalAlignment,
+      borderRadius: this.designConfig.borderRadius,
+      wordWrap: this.designConfig.wordWrap,
 
-    // Vereinfachte Zusammenführung der Standard-Rahmenlinien
-    const borderMapping: { [key: string]: string } = {
-      topBorder: 'defaultTopBorder',
-      rightBorder: 'defaultRightBorder',
-      bottomBorder: 'defaultBottomBorder',
-      leftBorder: 'defaultLeftBorder',
+      // Erweiterte Border-Stile
+      topBorder: this.designConfig.defaultTopBorder || this.designConfig.borderTop,
+      rightBorder: this.designConfig.defaultRightBorder || this.designConfig.borderRight,
+      bottomBorder: this.designConfig.defaultBottomBorder || this.designConfig.borderBottom,
+      leftBorder: this.designConfig.defaultLeftBorder || this.designConfig.borderLeft,
+      additionalBorders: this.designConfig.additionalBorders,
     };
-    Object.keys(borderMapping).forEach((borderKey) => {
-      if (
-        !(effectiveStyle as Record<string, unknown>)[borderKey] &&
-        (this.designConfig as Record<string, unknown>)[borderMapping[borderKey]]
-      ) {
-        (effectiveStyle as Record<string, unknown>)[borderKey] = {
-          ...((this.designConfig as Record<string, unknown>)[borderMapping[borderKey]] as object),
-        };
+
+    // Spezial-Formatierung basierend auf der Position in der Tabelle
+
+    // Header-Zeile
+    if (row === 0 && this.designConfig.headingRowStyle) {
+      this.applyConfigToStyle(baseStyle, this.designConfig.headingRowStyle);
+    }
+
+    // Header-Spalte
+    if (col === 0 && this.designConfig.headingColumnStyle) {
+      this.applyConfigToStyle(baseStyle, this.designConfig.headingColumnStyle);
+    }
+
+    // Erste Zeile
+    if (row === 0 && this.designConfig.firstRowStyle) {
+      Object.assign(baseStyle, this.designConfig.firstRowStyle);
+    }
+
+    // Letzte Zeile
+    // (Hier müsste die Zeilenanzahl bekannt sein, daher sollte ein zusätzlicher Parameter eingeführt werden)
+
+    // Erste Spalte
+    if (col === 0 && this.designConfig.firstColumnStyle) {
+      Object.assign(baseStyle, this.designConfig.firstColumnStyle);
+    }
+
+    // Letzte Spalte
+    // (Hier müsste die Spaltenanzahl bekannt sein, daher sollte ein zusätzlicher Parameter eingeführt werden)
+
+    // Ungerade/Gerade Zeilen
+    if (this.designConfig.oddRowStyle && row % 2 !== 0) {
+      Object.assign(baseStyle, this.designConfig.oddRowStyle);
+    } else if (this.designConfig.evenRowStyle && row % 2 === 0) {
+      Object.assign(baseStyle, this.designConfig.evenRowStyle);
+    }
+
+    // Spezielle Zellen über Selektor
+    if (this.designConfig.specialCells) {
+      for (const specialCell of this.designConfig.specialCells) {
+        if (
+          specialCell.selector === 'coordinates' &&
+          specialCell.coordinates &&
+          specialCell.coordinates.row === row &&
+          specialCell.coordinates.col === col
+        ) {
+          Object.assign(baseStyle, specialCell.style);
+        } else if (specialCell.selector === 'first-row' && row === 0) {
+          Object.assign(baseStyle, specialCell.style);
+        } else if (specialCell.selector === 'first-column' && col === 0) {
+          Object.assign(baseStyle, specialCell.style);
+        } else if (
+          specialCell.selector === 'nth-row' &&
+          specialCell.index !== undefined &&
+          row === specialCell.index
+        ) {
+          Object.assign(baseStyle, specialCell.style);
+        } else if (
+          specialCell.selector === 'nth-column' &&
+          specialCell.index !== undefined &&
+          col === specialCell.index
+        ) {
+          Object.assign(baseStyle, specialCell.style);
+        }
       }
-    });
+    }
 
-    // Merge additionalBorders aus DesignConfig und userStyle
-    effectiveStyle.additionalBorders = [
-      ...(this.designConfig.additionalBorders || []),
-      ...(userStyle.additionalBorders || []),
-    ];
+    // Kombiniere Basis-Stil mit Benutzer-Stil (user style überschreibt baseStyle)
+    return { ...baseStyle, ...userStyle };
+  }
 
-    return effectiveStyle;
+  /**
+   * Hilfsmethode zum Anwenden von DesignConfig-Properties auf einen Stil
+   */
+  private applyConfigToStyle(style: TableCellStyle, config: Partial<DesignConfig>): void {
+    if (config.fontSize !== undefined) style.fontSize = config.fontSize;
+    if (config.fontColor !== undefined) style.fontColor = config.fontColor;
+    if (config.backgroundColor !== undefined) style.backgroundColor = config.backgroundColor;
+    if (config.borderColor !== undefined) style.borderColor = config.borderColor;
+    if (config.borderWidth !== undefined) style.borderWidth = config.borderWidth;
+    if (config.fontFamily !== undefined) style.fontFamily = config.fontFamily;
+    if (config.fontWeight !== undefined) style.fontWeight = config.fontWeight;
+    if (config.fontStyle !== undefined) style.fontStyle = config.fontStyle;
+    if (config.alignment !== undefined) style.alignment = config.alignment;
+    if (config.padding !== undefined) style.padding = config.padding;
+    if (config.verticalAlignment !== undefined) style.verticalAlignment = config.verticalAlignment;
+    if (config.borderRadius !== undefined) style.borderRadius = config.borderRadius;
+    if (config.borderTop !== undefined) style.topBorder = config.borderTop;
+    if (config.borderRight !== undefined) style.rightBorder = config.borderRight;
+    if (config.borderBottom !== undefined) style.bottomBorder = config.borderBottom;
+    if (config.borderLeft !== undefined) style.leftBorder = config.borderLeft;
+    if (config.wordWrap !== undefined) style.wordWrap = config.wordWrap;
   }
 
   /**
