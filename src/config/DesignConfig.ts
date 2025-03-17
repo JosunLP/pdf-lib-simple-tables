@@ -21,10 +21,27 @@
  * @property {'normal' | 'italic' | 'oblique'} [fontStyle] - Default font style
  * @property {'left' | 'center' | 'right'} [alignment] - Default horizontal alignment
  * @property {string} [tableClassName] - Default CSS class name for the table
- * @property {string} [alternateRowColor] - Alternate row coloring (zebra effect)
+ * @property {{ r: number; g: number; b: number }} [alternateRowColor] - Alternate row coloring (zebra effect)
  * @property {boolean} [responsiveBreakpoints] - Enable responsive styling
- * @property {string} [hoverRowHighlight] - Hover row highlight color
+ * @property {{ r: number; g: number; b: number }} [hoverRowHighlight] - Hover row highlight color
  * @property {TableCellStyle} [selectedCellStyle] - Selected cell style
+ * @property {number} [cellSpacing] - Space between cells
+ * @property {boolean} [collapseBorders] - Whether borders should collapse
+ * @property {'separate' | 'collapse'} [borderCollapse] - Border collapse mode like in CSS
+ * @property {SectionStyle} [theadStyle] - Table header section style
+ * @property {SectionStyle} [tbodyStyle] - Table body section style
+ * @property {SectionStyle} [tfootStyle] - Table footer section style
+ * @property {BorderStyle} [tableBorder] - Border around entire table
+ * @property {CellSelector[]} [specialCells] - Special styling for specific cells
+ * @property {string} [boxShadow] - CSS-style box shadow for table
+ * @property {string} [caption] - Table caption
+ * @property {{ position: 'top' | 'bottom'; style: TableCellStyle }} [captionStyle] - Caption styling
+ * @property {TableCellStyle} [evenRowStyle] - Style for even rows
+ * @property {TableCellStyle} [oddRowStyle] - Style for odd rows
+ * @property {TableCellStyle} [firstRowStyle] - Style for the first row
+ * @property {TableCellStyle} [lastRowStyle] - Style for the last row
+ * @property {TableCellStyle} [firstColumnStyle] - Style for the first column
+ * @property {TableCellStyle} [lastColumnStyle] - Style for the last column
  */
 export interface DesignConfig {
   fontFamily?: string;
@@ -33,6 +50,12 @@ export interface DesignConfig {
   backgroundColor?: { r: number; g: number; b: number };
   borderColor?: { r: number; g: number; b: number };
   borderWidth?: number;
+
+  // Border properties for direct border styling
+  borderTop?: BorderStyle;
+  borderRight?: BorderStyle;
+  borderBottom?: BorderStyle;
+  borderLeft?: BorderStyle;
 
   // New options for headers
   headingRowStyle?: Partial<DesignConfig>;
@@ -61,6 +84,30 @@ export interface DesignConfig {
   responsiveBreakpoints?: boolean;
   hoverRowHighlight?: { r: number; g: number; b: number };
   selectedCellStyle?: TableCellStyle;
+
+  // Erweiterte HTML/CSS-ähnliche Tabellen-Funktionen
+  cellSpacing?: number; // Abstand zwischen Zellen (wie cellspacing in HTML)
+  borderCollapse?: 'separate' | 'collapse'; // Ähnlich wie in CSS
+  theadStyle?: SectionStyle; // Stil für den Tabellenkopfbereich
+  tbodyStyle?: SectionStyle; // Stil für den Tabellenhauptteil
+  tfootStyle?: SectionStyle; // Stil für den Tabellenfußbereich
+  tableBorder?: BorderStyle; // Rahmen um die gesamte Tabelle
+  specialCells?: CellSelector[]; // Spezielle Stile für bestimmte Zellen
+  boxShadow?: string; // CSS-ähnlicher Schatten für die Tabelle
+  caption?: string; // Tabellenbeschriftung
+  captionStyle?: {
+    // Stil für die Beschriftung
+    position: 'top' | 'bottom';
+    style: TableCellStyle;
+  };
+
+  // Zebra-Muster und erweiterte Zeilenformatierung
+  evenRowStyle?: TableCellStyle; // Stil für gerade Zeilen
+  oddRowStyle?: TableCellStyle; // Stil für ungerade Zeilen
+  firstRowStyle?: TableCellStyle; // Spezielle Formatierung für erste Zeile
+  lastRowStyle?: TableCellStyle; // Spezielle Formatierung für letzte Zeile
+  firstColumnStyle?: TableCellStyle; // Spezielle Formatierung für erste Spalte
+  lastColumnStyle?: TableCellStyle; // Spezielle Formatierung für letzte Spalte
 }
 
 // Import BorderStyle and AdditionalBorder definitions
@@ -68,25 +115,38 @@ import { BorderStyle, TableCellStyle } from '../interfaces/TableCellStyle';
 import { AdditionalBorder } from '../interfaces/AdditionalBorder';
 
 /**
+ * Definition für Abschnitts-Stile (thead, tbody, tfoot)
+ */
+export interface SectionStyle {
+  backgroundColor?: { r: number; g: number; b: number };
+  borderTop?: BorderStyle;
+  borderBottom?: BorderStyle;
+  defaultCellStyle?: TableCellStyle;
+}
+
+/**
+ * Zellenauswahl für spezielle Formatierung
+ */
+export interface CellSelector {
+  selector:
+    | 'first-row'
+    | 'last-row'
+    | 'first-column'
+    | 'last-column'
+    | 'even-rows'
+    | 'odd-rows'
+    | 'nth-row'
+    | 'nth-column'
+    | 'coordinates';
+  index?: number; // Für nth-row/column
+  coordinates?: { row: number; col: number }; // Für spezifische Zellen
+  style: TableCellStyle;
+}
+
+/**
  * Default design config
  * @constant
  * @default
- * {
- *  fontFamily: 'Helvetica, Arial, sans-serif',
- * fontSize: 12,
- * fontColor: { r: 0, g: 0, b: 0 },
- * backgroundColor: { r: 255, g: 255, b: 255 },
- * borderColor: { r: 200, g: 200, b: 200 },
- * borderWidth: 1,
- * headingRowStyle: {
- *  backgroundColor: { r: 220, g: 220, b: 220 },
- *  fontSize: 13,
- * },
- * headingColumnStyle: {
- *  backgroundColor: { r: 240, g: 240, b: 240 },
- *  fontSize: 13,
- * }
- * }
  */
 export const defaultDesignConfig: DesignConfig = {
   fontFamily: 'Helvetica, Arial, sans-serif',
@@ -99,12 +159,12 @@ export const defaultDesignConfig: DesignConfig = {
   headingRowStyle: {
     backgroundColor: { r: 220, g: 220, b: 220 },
     fontSize: 13,
-    // further adjustments if needed...
+    fontWeight: 'bold',
   },
   headingColumnStyle: {
     backgroundColor: { r: 240, g: 240, b: 240 },
     fontSize: 13,
-    // further adjustments if needed...
+    fontWeight: 'bold',
   },
   // Default border configurations
   defaultTopBorder: {
@@ -133,6 +193,11 @@ export const defaultDesignConfig: DesignConfig = {
   },
   // Default: no additional borders
   additionalBorders: [],
+  // HTML/CSS-ähnliche Standardeinstellungen
+  borderCollapse: 'collapse',
+  padding: '5 5 5 5', // Oben, Rechts, Unten, Links
+  verticalAlignment: 'middle',
+  alignment: 'left',
 };
 
 /**
@@ -201,4 +266,203 @@ export const highContrastDesignConfig: DesignConfig = {
   borderWidth: 2,
 };
 
-// Additional design templates can be added here...
+/**
+ * Finanz- und Rechnungstabelle
+ * Professionell gestaltete Tabelle für Finanzberichte und Rechnungen
+ */
+export const financialTableDesign: DesignConfig = {
+  fontFamily: 'Arial, sans-serif',
+  fontSize: 11,
+  fontColor: { r: 50, g: 50, b: 50 },
+  backgroundColor: { r: 255, g: 255, b: 255 },
+  borderColor: { r: 230, g: 230, b: 230 },
+  borderWidth: 0.5,
+  headingRowStyle: {
+    backgroundColor: { r: 240, g: 240, b: 240 },
+    fontWeight: 'bold',
+    borderBottom: {
+      display: true,
+      color: { r: 180, g: 180, b: 180 },
+      width: 1,
+      style: 'solid',
+    },
+  },
+  evenRowStyle: {
+    backgroundColor: { r: 250, g: 250, b: 250 },
+  },
+  oddRowStyle: {
+    backgroundColor: { r: 255, g: 255, b: 255 },
+  },
+  // Fußzeile für Summen
+  tfootStyle: {
+    backgroundColor: { r: 245, g: 245, b: 245 },
+    borderTop: {
+      display: true,
+      color: { r: 180, g: 180, b: 180 },
+      width: 1,
+      style: 'solid',
+    },
+    defaultCellStyle: {
+      fontWeight: 'bold',
+    },
+  },
+};
+
+/**
+ * Dashboard-Tabelle
+ * Moderne Tabelle mit abgerundeten Ecken für Dashboards
+ */
+export const dashboardTableDesign: DesignConfig = {
+  fontFamily: 'Segoe UI, Roboto, sans-serif',
+  fontSize: 12,
+  fontColor: { r: 60, g: 60, b: 60 },
+  backgroundColor: { r: 255, g: 255, b: 255 },
+  borderWidth: 0,
+  borderRadius: '8px',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+  headingRowStyle: {
+    backgroundColor: { r: 250, g: 250, b: 250 },
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  hoverRowHighlight: { r: 245, g: 245, b: 252 },
+  defaultTopBorder: {
+    display: false,
+  },
+  defaultRightBorder: {
+    display: false,
+  },
+  defaultBottomBorder: {
+    display: true,
+    color: { r: 240, g: 240, b: 240 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultLeftBorder: {
+    display: false,
+  },
+  padding: '12 16 12 16',
+};
+
+/**
+ * Daten-Präsentations-Tabelle
+ * Für wissenschaftliche oder datenintensive Anwendungen
+ */
+export const dataTableDesign: DesignConfig = {
+  fontFamily: 'Consolas, "Courier New", monospace',
+  fontSize: 11,
+  fontColor: { r: 20, g: 20, b: 20 },
+  backgroundColor: { r: 255, g: 255, b: 255 },
+  borderCollapse: 'collapse',
+  headingRowStyle: {
+    backgroundColor: { r: 230, g: 240, b: 250 },
+    fontWeight: 'bold',
+    alignment: 'center',
+  },
+  alternateRowColor: { r: 245, g: 250, b: 253 },
+  defaultTopBorder: {
+    display: true,
+    color: { r: 210, g: 220, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultRightBorder: {
+    display: true,
+    color: { r: 210, g: 220, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultBottomBorder: {
+    display: true,
+    color: { r: 210, g: 220, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultLeftBorder: {
+    display: true,
+    color: { r: 210, g: 220, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  specialCells: [
+    {
+      selector: 'first-column',
+      style: {
+        fontWeight: 'bold',
+      },
+    },
+  ],
+};
+
+/**
+ * Minimalistisches Design
+ * Sehr reduzierte Tabelle mit minimalen Designelementen
+ */
+export const minimalistTableDesign: DesignConfig = {
+  fontFamily: 'Helvetica Neue, Arial, sans-serif',
+  fontSize: 11,
+  fontColor: { r: 80, g: 80, b: 80 },
+  backgroundColor: { r: 255, g: 255, b: 255 },
+  borderWidth: 0,
+  headingRowStyle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    borderBottom: {
+      display: true,
+      color: { r: 230, g: 230, b: 230 },
+      width: 1,
+      style: 'solid',
+    },
+  },
+  defaultTopBorder: { display: false },
+  defaultRightBorder: { display: false },
+  defaultBottomBorder: {
+    display: true,
+    color: { r: 240, g: 240, b: 240 },
+    width: 0.5,
+    style: 'solid',
+  },
+  defaultLeftBorder: { display: false },
+  padding: '8 16 8 16',
+};
+
+/**
+ * Bootstrap-inspiriertes Design
+ */
+export const bootstrapTableDesign: DesignConfig = {
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontSize: 14,
+  fontColor: { r: 33, g: 37, b: 41 },
+  backgroundColor: { r: 255, g: 255, b: 255 },
+  borderCollapse: 'collapse',
+  headingRowStyle: {
+    backgroundColor: { r: 248, g: 249, b: 250 },
+    fontWeight: 'bold',
+  },
+  defaultTopBorder: {
+    display: true,
+    color: { r: 222, g: 226, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultRightBorder: {
+    display: true,
+    color: { r: 222, g: 226, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultBottomBorder: {
+    display: true,
+    color: { r: 222, g: 226, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultLeftBorder: {
+    display: true,
+    color: { r: 222, g: 226, b: 230 },
+    width: 1,
+    style: 'solid',
+  },
+  padding: '8 12 8 12',
+  hoverRowHighlight: { r: 248, g: 249, b: 250 },
+};
