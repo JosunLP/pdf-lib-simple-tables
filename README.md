@@ -145,18 +145,18 @@ Individual borders with custom styles:
 
 ```typescript
 table.setCellStyle(1, 1, {
-  topBorder: { 
-    display: true, 
-    color: { r: 200, g: 0, b: 0 }, 
-    width: 2, 
-    style: 'solid' 
+  topBorder: {
+    display: true,
+    color: { r: 200, g: 0, b: 0 },
+    width: 2,
+    style: 'solid',
   },
-  bottomBorder: { 
-    display: true, 
-    color: { r: 0, g: 0, b: 200 }, 
-    width: 1, 
-    style: 'dashed' 
-  }
+  bottomBorder: {
+    display: true,
+    color: { r: 0, g: 0, b: 200 },
+    width: 1,
+    style: 'dashed',
+  },
 });
 ```
 
@@ -173,10 +173,10 @@ table.setCellStyle(1, 1, {
         display: true,
         color: { r: 200, g: 200, b: 200 },
         width: 0.5,
-        style: 'solid'
-      }
-    }
-  ]
+        style: 'solid',
+      },
+    },
+  ],
 });
 ```
 
@@ -191,13 +191,17 @@ const table = new PdfTable({
   columns: 3,
   rows: 5,
   designConfig: {
-    wordWrap: 'normal',  // Options: 'normal', 'break-word', 'none'
-    dynamicRowHeight: true,  // Rows expand to fit content
-  }
+    wordWrap: 'normal', // Options: 'normal', 'break-word', 'none'
+    dynamicRowHeight: true, // Rows expand to fit content
+  },
 });
 
 // Set long text in a cell
-table.setCell(1, 1, 'This is a long text that will wrap according to the cell width and configured word wrap behavior.');
+table.setCell(
+  1,
+  1,
+  'This is a long text that will wrap according to the cell width and configured word wrap behavior.',
+);
 ```
 
 #### Vertical Alignment
@@ -206,7 +210,7 @@ Control vertical text position:
 
 ```typescript
 table.setCellStyle(1, 1, {
-  verticalAlignment: 'middle'  // Options: 'top', 'middle', 'bottom'
+  verticalAlignment: 'middle', // Options: 'top', 'middle', 'bottom'
 });
 ```
 
@@ -220,12 +224,12 @@ const table = new PdfTable({
   rows: 10,
   designConfig: {
     evenRowStyle: {
-      backgroundColor: { r: 255, g: 255, b: 255 }
+      backgroundColor: { r: 255, g: 255, b: 255 },
     },
     oddRowStyle: {
-      backgroundColor: { r: 245, g: 245, b: 245 }
-    }
-  }
+      backgroundColor: { r: 245, g: 245, b: 245 },
+    },
+  },
 });
 ```
 
@@ -244,8 +248,8 @@ const table = new PdfTable({
         display: true,
         color: { r: 100, g: 100, b: 100 },
         width: 1,
-        style: 'solid'
-      }
+        style: 'solid',
+      },
     },
     tfootStyle: {
       backgroundColor: { r: 240, g: 240, b: 240 },
@@ -253,10 +257,10 @@ const table = new PdfTable({
         display: true,
         color: { r: 100, g: 100, b: 100 },
         width: 1,
-        style: 'solid'
-      }
-    }
-  }
+        style: 'solid',
+      },
+    },
+  },
 });
 ```
 
@@ -269,7 +273,7 @@ table.setCellStyle(1, 1, {
   fontWeight: 'bold',
   fontStyle: 'italic',
   textDecoration: 'underline',
-  textTransform: 'uppercase'
+  textTransform: 'uppercase',
 });
 ```
 
@@ -283,10 +287,10 @@ table.setCellStyle(1, 1, {
     type: 'linear',
     colors: [
       { position: 0, color: { r: 255, g: 255, b: 255 } },
-      { position: 1, color: { r: 200, g: 220, b: 240 } }
+      { position: 1, color: { r: 200, g: 220, b: 240 } },
     ],
-    angle: 45
-  }
+    angle: 45,
+  },
 });
 ```
 
@@ -296,8 +300,8 @@ Span cells across multiple columns or rows:
 
 ```typescript
 table.setCellStyle(1, 1, {
-  columnSpan: 2,  // Span 2 columns
-  rowSpan: 3      // Span 3 rows
+  columnSpan: 2, // Span 2 columns
+  rowSpan: 3, // Span 3 rows
 });
 ```
 
