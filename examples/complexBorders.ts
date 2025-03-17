@@ -97,4 +97,7 @@ async function createComplexBordersTable(): Promise<void> {
   fs.writeFileSync('complex_borders_example.pdf', pdfBytes);
 }
 
-createComplexBordersTable().catch(console.error);
+createComplexBordersTable().catch((error) => {
+  process.stderr.write(`PDF generation error: ${error}\n`);
+  process.exit(1);
+});
