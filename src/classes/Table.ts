@@ -10,6 +10,9 @@ import { TableDataManager } from '../managers/TableDataManager';
 import { MergeCellManager } from '../managers/MergeCellManager';
 import { FontManager } from '../managers/FontManager';
 import { ImageEmbedder } from '../embedders/ImageEmbedder';
+import { TableTemplate } from '../templates/TableTemplate';
+import { TableTemplateManager } from '../managers/TableTemplateManager';
+import { predefinedTemplates } from '../templates/predefinedTemplates';
 
 /**
  * Pdf table
@@ -28,6 +31,7 @@ export class PdfTable {
   private mergeCellManager: MergeCellManager;
   private fontManager: FontManager;
   private imageEmbedder: ImageEmbedder;
+  private templateManager: TableTemplateManager;
 
   constructor(options: TableOptions) {
     // Set default values if not present and merge design config
@@ -46,6 +50,46 @@ export class PdfTable {
     this.mergeCellManager = new MergeCellManager();
     this.fontManager = new FontManager();
     this.imageEmbedder = new ImageEmbedder();
+
+    // Initialisierung des Template-Managers mit vordefinierten Templates
+    this.templateManager = new TableTemplateManager();
+    predefinedTemplates.forEach((template) => {
+      this.templateManager.addTemplate(template);
+    });
+  }
+
+  /**
+   * Wendet ein Template auf die Tabelle an
+   * @param template Name des Templates oder TableTemplate-Objekt
+   */
+  applyTemplate(template: string | TableTemplate): void {
+    const designConfig = this.templateManager.convertTemplateToDesignConfig(template);
+    this.designConfig = designConfig;
+    this.styleManager = new TableStyleManager(this.designConfig);
+    this.tableRenderer = new TableRenderer(this.borderRenderer, this.styleManager);
+  }
+
+  /**
+   * Erstellt ein benutzerdefiniertes Template
+   * @param template TableTemplate-Definition
+   */
+  createTemplate(template: TableTemplate): void {
+    this.templateManager.addTemplate(template);
+  }
+
+  /**
+   * Lädt ein Template aus einem JSON-String
+   * @param jsonString JSON-String mit Template-Definition
+   */
+  loadTemplateFromJson(jsonString: string): void {
+    this.templateManager.loadTemplateFromJson(jsonString);
+  }
+
+  /**
+   * Gibt alle verfügbaren Template-Namen zurück
+   */
+  getAvailableTemplates(): string[] {
+    return this.templateManager.getAllTemplates().map((t) => t.name);
   }
 
   // Validierung und Delegate an den DataManager

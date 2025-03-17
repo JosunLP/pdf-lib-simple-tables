@@ -213,7 +213,7 @@ export class TableRenderer {
     }
 
     // Funktion zum Zeichnen einer Header-Zeile
-    const drawHeaderRows = () => {
+    const drawHeaderRows = (): number => {
       if (repeatHeaderRows <= 0) return currentY;
 
       let headerY = currentY;
