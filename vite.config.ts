@@ -13,7 +13,7 @@ export default defineConfig({
       formats: ['es', 'cjs', 'iife'],
       fileName: (format) => `index.${format}.js`,
     },
-    outDir: 'build',
+    outDir: 'dist',
   },
 
   // Resolve module paths with aliases

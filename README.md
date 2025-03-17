@@ -192,9 +192,9 @@ The `PdfTable` class serves as a facade, coordinating these modules to provide a
 ┌───────────────────┐          ┌──────────────────┐
 │  MergeCellManager  │          │  TableStyleManager │
 └───────────────────┘          └──────────────────┘
-         │                      
-         │                      
-         ▼                      
+         │
+         │
+         ▼
 ┌───────────────────┐          ┌──────────────────┐
 │    FontManager    │          │   ImageEmbedder  │
 └───────────────────┘          └──────────────────┘
