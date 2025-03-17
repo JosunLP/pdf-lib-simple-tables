@@ -14,6 +14,7 @@ async function createInvoiceExample(): Promise<void> {
     colWidth: 90, // Tabellenspaltenbreite
     rowHeight: 30, // Standard-Zeilenhöhe
     repeatHeaderRows: repeatHeaderRows, // Die Kopfzeilen bis einschließlich der Spaltenüberschriften wiederholen
+    headerRepetition: false, // Neue Option: wenn true (Standard), werden Header wiederholt, wenn false, werden sie nicht wiederholt
     pageBreakThreshold: 70, // Seitenumbruch, wenn weniger als 70 Punkte Platz verbleiben
   });
 

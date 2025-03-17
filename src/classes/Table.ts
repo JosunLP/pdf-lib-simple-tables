@@ -112,14 +112,6 @@ export class PdfTable {
     if (opts.tableHeight) {
       rowHeight = opts.tableHeight / opts.rows;
     }
-    const tableOptions = {
-      rowHeight,
-      colWidth,
-      rows: opts.rows,
-      columns: opts.columns,
-      repeatHeaderRows: opts.repeatHeaderRows,
-      pageBreakThreshold: opts.pageBreakThreshold,
-    };
 
     await this.tableRenderer.drawTable(
       pdfDoc,
@@ -127,7 +119,15 @@ export class PdfTable {
       this.dataManager.getData(),
       this.dataManager.getCellStyles(),
       this.mergeCellManager.getMergedCells(),
-      tableOptions,
+      {
+        rowHeight,
+        colWidth,
+        rows: opts.rows,
+        columns: opts.columns,
+        repeatHeaderRows: opts.repeatHeaderRows,
+        headerRepetition: opts.headerRepetition, // Neue Option weitergeben
+        pageBreakThreshold: opts.pageBreakThreshold,
+      },
     );
 
     return pdfDoc;
@@ -185,6 +185,7 @@ export class PdfTable {
         startX: startX,
         startY: initialY,
         useExistingPages: true,
+        headerRepetition: opts.headerRepetition, // Neue Option weitergeben
       },
     );
 

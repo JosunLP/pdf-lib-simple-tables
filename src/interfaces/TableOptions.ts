@@ -11,6 +11,7 @@ import { DesignConfig } from '../config/DesignConfig';
  * @property {number} [tableWidth] - Total width of the table
  * @property {number} [tableHeight] - Total height of the table
  * @property {number} [repeatHeaderRows] - Number of header rows to repeat on each page
+ * @property {boolean} [headerRepetition] - Controls whether headers are repeated
  * @property {number} [pageBreakThreshold] - Distance to the page end at which a page break should occur
  */
 export interface TableOptions {
@@ -22,5 +23,6 @@ export interface TableOptions {
   tableWidth?: number;
   tableHeight?: number;
   repeatHeaderRows?: number; // Number of header rows to repeat on each page
+  headerRepetition?: boolean; // Controls whether headers are repeated
   pageBreakThreshold?: number; // Distance to the page end at which a page break should occur
 }

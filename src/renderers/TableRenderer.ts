@@ -111,6 +111,7 @@ export class TableRenderer {
       rows: number;
       columns: number;
       repeatHeaderRows?: number;
+      headerRepetition?: boolean; // Neue Option: steuert, ob Headers wiederholt werden
       pageBreakThreshold?: number;
       startX?: number;
       startY?: number;
@@ -286,8 +287,8 @@ export class TableRenderer {
         page = pdfDoc.addPage();
         currentY = page.getSize().height - 50;
 
-        // Wenn Header-Zeilen wiederholt werden sollen, zeichne sie
-        if (repeatHeaderRows > 0) {
+        // Wenn Header-Zeilen wiederholt werden sollen und headerRepetition aktiviert ist, zeichne sie
+        if (repeatHeaderRows > 0 && options.headerRepetition !== false) {
           currentY = drawHeaderRows();
         }
       }
