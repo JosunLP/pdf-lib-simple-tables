@@ -96,6 +96,9 @@ PDF-lib Table Library now offers multiple design templates:
 - `classicDesignConfig`: Classic look with serif font.
 - `modernDesignConfig`: Modern, minimalist style.
 - `highContrastDesignConfig`: High contrast for improved readability.
+- `financialTableDesign`: Professional style for financial reports and invoices.
+- `dataTableDesign`: For scientific or data-intensive applications.
+- `darkModeTableDesign`: Eye-friendly design for dark interfaces.
 
 Example:
 
@@ -113,6 +116,189 @@ table.setCell(0, 0, 'Header 1');
 
 const pdfDoc = await table.toPDF();
 const pdfBytes = await pdfDoc.save();
+```
+
+### Predefined Table Templates
+
+The library includes complete table templates for common use cases:
+
+```typescript
+import { PdfTable, predefinedTemplates } from 'pdf-lib-simple-tables';
+
+// Available templates:
+// - modernBusinessTemplate: Modern business document style
+// - invoiceTemplate: Professional invoice format
+// - minimalistTemplate: Clean, minimal design
+
+const table = new PdfTable({
+  columns: 4,
+  rows: 10,
+  designConfig: predefinedTemplates[0], // modernBusinessTemplate
+});
+```
+
+### Advanced Styling Options
+
+#### Border Styling
+
+Individual borders with custom styles:
+
+```typescript
+table.setCellStyle(1, 1, {
+  topBorder: { 
+    display: true, 
+    color: { r: 200, g: 0, b: 0 }, 
+    width: 2, 
+    style: 'solid' 
+  },
+  bottomBorder: { 
+    display: true, 
+    color: { r: 0, g: 0, b: 200 }, 
+    width: 1, 
+    style: 'dashed' 
+  }
+});
+```
+
+#### Additional Internal Borders
+
+Add horizontal lines within cells:
+
+```typescript
+table.setCellStyle(1, 1, {
+  additionalBorders: [
+    {
+      yOffset: 10, // 10 points from the top of the cell
+      style: {
+        display: true,
+        color: { r: 200, g: 200, b: 200 },
+        width: 0.5,
+        style: 'solid'
+      }
+    }
+  ]
+});
+```
+
+#### Text Wrapping and Dynamic Row Height
+
+Control text wrapping and enable dynamic row height:
+
+```typescript
+import { PdfTable } from 'pdf-lib-simple-tables';
+
+const table = new PdfTable({
+  columns: 3,
+  rows: 5,
+  designConfig: {
+    wordWrap: 'normal',  // Options: 'normal', 'break-word', 'none'
+    dynamicRowHeight: true,  // Rows expand to fit content
+  }
+});
+
+// Set long text in a cell
+table.setCell(1, 1, 'This is a long text that will wrap according to the cell width and configured word wrap behavior.');
+```
+
+#### Vertical Alignment
+
+Control vertical text position:
+
+```typescript
+table.setCellStyle(1, 1, {
+  verticalAlignment: 'middle'  // Options: 'top', 'middle', 'bottom'
+});
+```
+
+#### Alternating Row Colors
+
+Easily create zebra-striped tables:
+
+```typescript
+const table = new PdfTable({
+  columns: 3,
+  rows: 10,
+  designConfig: {
+    evenRowStyle: {
+      backgroundColor: { r: 255, g: 255, b: 255 }
+    },
+    oddRowStyle: {
+      backgroundColor: { r: 245, g: 245, b: 245 }
+    }
+  }
+});
+```
+
+#### Section Styling
+
+Apply styles to table sections like headers and footers:
+
+```typescript
+const table = new PdfTable({
+  columns: 4,
+  rows: 10,
+  designConfig: {
+    theadStyle: {
+      backgroundColor: { r: 230, g: 230, b: 230 },
+      borderBottom: {
+        display: true,
+        color: { r: 100, g: 100, b: 100 },
+        width: 1,
+        style: 'solid'
+      }
+    },
+    tfootStyle: {
+      backgroundColor: { r: 240, g: 240, b: 240 },
+      borderTop: {
+        display: true,
+        color: { r: 100, g: 100, b: 100 },
+        width: 1,
+        style: 'solid'
+      }
+    }
+  }
+});
+```
+
+#### Advanced Text Formatting
+
+Apply rich text styling:
+
+```typescript
+table.setCellStyle(1, 1, {
+  fontWeight: 'bold',
+  fontStyle: 'italic',
+  textDecoration: 'underline',
+  textTransform: 'uppercase'
+});
+```
+
+#### Background Gradients
+
+Create cells with gradient backgrounds:
+
+```typescript
+table.setCellStyle(1, 1, {
+  backgroundGradient: {
+    type: 'linear',
+    colors: [
+      { position: 0, color: { r: 255, g: 255, b: 255 } },
+      { position: 1, color: { r: 200, g: 220, b: 240 } }
+    ],
+    angle: 45
+  }
+});
+```
+
+#### Cell Spanning
+
+Span cells across multiple columns or rows:
+
+```typescript
+table.setCellStyle(1, 1, {
+  columnSpan: 2,  // Span 2 columns
+  rowSpan: 3      // Span 3 rows
+});
 ```
 
 ## Advanced Features
@@ -184,13 +370,13 @@ The `PdfTable` class serves as a facade, coordinating these modules to provide a
          │ delegates                    │ uses
          ▼                              ▼
 ┌───────────────────┐          ┌──────────────────┐
-│  TableDataManager  │          │  BorderRenderer  │
+│  TableDataManager │          │  BorderRenderer  │
 └───────────────────┘          └──────────────────┘
          │                              │
          │                              │ uses
          ▼                              ▼
 ┌───────────────────┐          ┌──────────────────┐
-│  MergeCellManager  │          │  TableStyleManager │
+│  MergeCellManager │          │ TableStyleManager│
 └───────────────────┘          └──────────────────┘
          │
          │
@@ -277,6 +463,12 @@ Embeds tables as images in PDFs.
 - `rows: number`
 - `rowHeight?: number`
 - `colWidth?: number`
+- `designConfig?: DesignConfig`
+- `tableWidth?: number`
+- `tableHeight?: number`
+- `repeatHeaderRows?: number`
+- `headerRepetition?: boolean`
+- `pageBreakThreshold?: number`
 
 #### `TableCellStyle`
 
@@ -286,6 +478,52 @@ Embeds tables as images in PDFs.
 - `borderColor?: { r: number; g: number; b: number }`
 - `borderWidth?: number`
 - `alignment?: 'left' | 'center' | 'right'`
+- `topBorder?: BorderStyle`
+- `rightBorder?: BorderStyle`
+- `bottomBorder?: BorderStyle`
+- `leftBorder?: BorderStyle`
+- `additionalBorders?: AdditionalBorder[]`
+- `padding?: string | number`
+- `fontFamily?: string`
+- `fontWeight?: 'normal' | 'bold' | 'lighter' | number`
+- `fontStyle?: 'normal' | 'italic' | 'oblique'`
+- `verticalAlignment?: 'top' | 'middle' | 'bottom'`
+- `wordWrap?: 'normal' | 'break-word' | 'none'`
+- `backgroundGradient?: {...}`
+- `columnSpan?: number`
+- `rowSpan?: number`
+
+#### `BorderStyle`
+
+- `display?: boolean`
+- `color?: { r: number; g: number; b: number }`
+- `width?: number`
+- `style?: 'solid' | 'dashed' | 'dotted'`
+- `dashArray?: number[]`
+- `dashPhase?: number`
+
+#### `DesignConfig`
+
+- `fontFamily?: string`
+- `fontSize?: number`
+- `fontColor?: { r: number; g: number; b: number }`
+- `backgroundColor?: { r: number; g: number; b: number }`
+- `borderColor?: { r: number; g: number; b: number }`
+- `borderWidth?: number`
+- `headingRowStyle?: Partial<DesignConfig>`
+- `headingColumnStyle?: Partial<DesignConfig>`
+- `defaultTopBorder?: BorderStyle`
+- `defaultRightBorder?: BorderStyle`
+- `defaultBottomBorder?: BorderStyle`
+- `defaultLeftBorder?: BorderStyle`
+- `additionalBorders?: AdditionalBorder[]`
+- `evenRowStyle?: TableCellStyle`
+- `oddRowStyle?: TableCellStyle`
+- `theadStyle?: SectionStyle`
+- `tbodyStyle?: SectionStyle`
+- `tfootStyle?: SectionStyle`
+- `wordWrap?: 'normal' | 'break-word' | 'none'`
+- `dynamicRowHeight?: boolean`
 
 #### `MergedCell`
 

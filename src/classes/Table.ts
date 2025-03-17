@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { CustomFont } from '../models/CustomFont';
 import { defaultDesignConfig, DesignConfig } from '../config/DesignConfig';
 import { TableCellStyle } from '../interfaces/TableCellStyle';
@@ -10,6 +10,9 @@ import { TableDataManager } from '../managers/TableDataManager';
 import { MergeCellManager } from '../managers/MergeCellManager';
 import { FontManager } from '../managers/FontManager';
 import { ImageEmbedder } from '../embedders/ImageEmbedder';
+import { TableTemplate } from '../templates/TableTemplate';
+import { TableTemplateManager } from '../managers/TableTemplateManager';
+import { predefinedTemplates } from '../templates/predefinedTemplates';
 
 /**
  * Pdf table
@@ -28,6 +31,7 @@ export class PdfTable {
   private mergeCellManager: MergeCellManager;
   private fontManager: FontManager;
   private imageEmbedder: ImageEmbedder;
+  public templateManager: TableTemplateManager;
 
   constructor(options: TableOptions) {
     // Set default values if not present and merge design config
@@ -46,6 +50,46 @@ export class PdfTable {
     this.mergeCellManager = new MergeCellManager();
     this.fontManager = new FontManager();
     this.imageEmbedder = new ImageEmbedder();
+
+    // Initialisierung des Template-Managers mit vordefinierten Templates
+    this.templateManager = new TableTemplateManager();
+    predefinedTemplates.forEach((template) => {
+      this.templateManager.addTemplate(template);
+    });
+  }
+
+  /**
+   * Wendet ein Template auf die Tabelle an
+   * @param template Name des Templates oder TableTemplate-Objekt
+   */
+  applyTemplate(template: string | TableTemplate): void {
+    const designConfig = this.templateManager.convertTemplateToDesignConfig(template);
+    this.designConfig = designConfig;
+    this.styleManager = new TableStyleManager(this.designConfig);
+    this.tableRenderer = new TableRenderer(this.borderRenderer, this.styleManager);
+  }
+
+  /**
+   * Erstellt ein benutzerdefiniertes Template
+   * @param template TableTemplate-Definition
+   */
+  createTemplate(template: TableTemplate): void {
+    this.templateManager.addTemplate(template);
+  }
+
+  /**
+   * Lädt ein Template aus einem JSON-String
+   * @param jsonString JSON-String mit Template-Definition
+   */
+  loadTemplateFromJson(jsonString: string): void {
+    this.templateManager.loadTemplateFromJson(jsonString);
+  }
+
+  /**
+   * Gibt alle verfügbaren Template-Namen zurück
+   */
+  getAvailableTemplates(): string[] {
+    return this.templateManager.getAllTemplates().map((t) => t.name);
   }
 
   // Validierung und Delegate an den DataManager
@@ -103,12 +147,15 @@ export class PdfTable {
     const pdfDoc = await PDFDocument.create();
     const pdfFont = await this.fontManager.embedFont(pdfDoc);
     const opts = this.dataManager.getOptions();
-    const tableOptions = {
-      rowHeight: opts.rowHeight ?? 20,
-      colWidth: opts.colWidth ?? 80,
-      rows: opts.rows,
-      columns: opts.columns,
-    };
+    // Berechne Zellenmaße anhand der Gesamtgröße, falls angegeben
+    let rowHeight = opts.rowHeight ?? 20;
+    let colWidth = opts.colWidth ?? 80;
+    if (opts.tableWidth) {
+      colWidth = opts.tableWidth / opts.columns;
+    }
+    if (opts.tableHeight) {
+      rowHeight = opts.tableHeight / opts.rows;
+    }
 
     await this.tableRenderer.drawTable(
       pdfDoc,
@@ -116,49 +163,80 @@ export class PdfTable {
       this.dataManager.getData(),
       this.dataManager.getCellStyles(),
       this.mergeCellManager.getMergedCells(),
-      tableOptions,
+      {
+        rowHeight,
+        colWidth,
+        rows: opts.rows,
+        columns: opts.columns,
+        repeatHeaderRows: opts.repeatHeaderRows,
+        headerRepetition: opts.headerRepetition, // Neue Option weitergeben
+        pageBreakThreshold: opts.pageBreakThreshold,
+      },
     );
 
     return pdfDoc;
   }
 
-  // PDF embedding
   async embedInPDF(existingDoc: PDFDocument, startX: number, startY: number): Promise<PDFDocument> {
     if (startX < 0 || startY < 0) {
       throw new Error('Invalid coordinates for embedInPDF');
     }
 
-    let page = existingDoc.addPage();
-    let currentY = startY;
-    const options = this.dataManager.getOptions();
-    const rowHeight = options.rowHeight || 20;
-    const colWidth = options.colWidth || 80;
+    const opts = this.dataManager.getOptions();
     const pdfFont = await existingDoc.embedFont(StandardFonts.Helvetica);
 
-    for (let row = 0; row < options.rows; row++) {
-      if (currentY - rowHeight < 50) {
-        page = existingDoc.addPage();
-        currentY = page.getSize().height - 50;
-      }
-      let x = startX;
-      for (let col = 0; col < options.columns; col++) {
-        const text = this.dataManager.getCell(row, col);
-        page.drawText(text, {
-          x: x + 5,
-          y: currentY - rowHeight + 5,
-          size: 12,
-          font: pdfFont,
-          color: rgb(0, 0, 0),
-        });
-        x += colWidth;
-      }
-      currentY -= rowHeight;
+    // Berechne Zellenmaße analog zu toPDF
+    let rowHeight = opts.rowHeight ?? 20;
+    let colWidth = opts.colWidth ?? 80;
+    if (opts.tableWidth) {
+      colWidth = opts.tableWidth / opts.columns;
     }
+    if (opts.tableHeight) {
+      rowHeight = opts.tableHeight / opts.rows;
+    }
+
+    // Verwende TableRenderer für konsistentes Rendering mit Seitenumbruch
+    const tableOptions = {
+      rowHeight,
+      colWidth,
+      rows: opts.rows,
+      columns: opts.columns,
+      repeatHeaderRows: opts.repeatHeaderRows,
+      pageBreakThreshold: opts.pageBreakThreshold ?? 50,
+    };
+
+    // Erste Seite hinzufügen wenn noch keine vorhanden
+    if (existingDoc.getPageCount() === 0) {
+      existingDoc.addPage();
+    }
+
+    // Anpassen des initialen Y-Werts
+    const firstPage = existingDoc.getPage(existingDoc.getPageCount() - 1);
+    const initialY = startY > 0 ? startY : firstPage.getSize().height - 50;
+
+    // Modifizierter TableRenderer für existierendes Dokument
+    const customRenderer = new TableRenderer(this.borderRenderer, this.styleManager);
+
+    // Seitenumbruch mit TableRenderer
+    await customRenderer.drawTable(
+      existingDoc,
+      pdfFont,
+      this.dataManager.getData(),
+      this.dataManager.getCellStyles(),
+      this.mergeCellManager.getMergedCells(),
+      {
+        ...tableOptions,
+        startX: startX,
+        startY: initialY,
+        useExistingPages: true,
+        headerRepetition: opts.headerRepetition, // Neue Option weitergeben
+      },
+    );
 
     return existingDoc;
   }
 
-  // Delegate an den ImageEmbedder
+  // PDF embedding
   async embedTableAsImage(
     existingDoc: PDFDocument,
     imageBytes: Uint8Array,
