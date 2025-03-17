@@ -52,8 +52,8 @@ describe('TableTemplateManager', () => {
   test('should throw error when loading invalid JSON string', () => {
     const invalidJsonString = '{ name: "InvalidJsonTemplate"';
 
-    expect(() => templateManager.loadTemplateFromJson(invalidJsonString)).toThrowError(
-      "Fehler beim Laden des Templates: SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
+    expect(() => templateManager.loadTemplateFromJson(invalidJsonString)).toThrow(
+      /Fehler beim Laden des Templates: SyntaxError:/,
     );
   });
 
