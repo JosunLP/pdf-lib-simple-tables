@@ -50,6 +50,16 @@ export interface TableTemplate {
     verticalAlignment?: 'top' | 'middle' | 'bottom';
     horizontalAlignment?: 'left' | 'center' | 'right';
     alternateRowColoring?: boolean;
+
+    // Erweiterte Textformatierung hinzugefügt
+    textDecoration?: 'none' | 'underline' | 'line-through';
+    textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+    textOverflow?: 'clip' | 'ellipsis';
+    whiteSpace?: 'normal' | 'nowrap' | 'pre';
+
+    // Visuelle Effekte
+    boxShadow?: string;
+    opacity?: number;
   };
 
   // Spezialisierte Designs für bestimmte Zellen (per Position oder Regel)

@@ -106,6 +106,14 @@ export class TableTemplateManager {
       wordWrap: templateObj.advanced?.wordWrap,
       verticalAlignment: templateObj.advanced?.verticalAlignment,
       alignment: templateObj.advanced?.horizontalAlignment,
+
+      // Erweiterte Formatierungsoptionen
+      textDecoration: templateObj.advanced?.textDecoration,
+      textTransform: templateObj.advanced?.textTransform,
+      textOverflow: templateObj.advanced?.textOverflow,
+      whiteSpace: templateObj.advanced?.whiteSpace,
+      boxShadow: templateObj.advanced?.boxShadow,
+      opacity: templateObj.advanced?.opacity,
     };
 
     // Spezielle Zellen-Stile konvertieren
