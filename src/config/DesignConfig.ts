@@ -437,6 +437,8 @@ export const minimalistTableDesign: DesignConfig = {
       width: 1,
       style: 'solid',
     },
+    backgroundColor: { r: 252, g: 252, b: 252 },
+    padding: '10 16 10 16',
   },
   defaultTopBorder: { display: false },
   defaultRightBorder: { display: false },
@@ -450,10 +452,12 @@ export const minimalistTableDesign: DesignConfig = {
   padding: '8 16 8 16',
   wordWrap: 'normal',
   dynamicRowHeight: true,
+  verticalAlignment: 'middle',
 };
 
 /**
  * Bootstrap-inspiriertes Design
+ * Responsive und moderne Tabelle im Bootstrap-Stil
  */
 export const bootstrapTableDesign: DesignConfig = {
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -464,6 +468,8 @@ export const bootstrapTableDesign: DesignConfig = {
   headingRowStyle: {
     backgroundColor: { r: 248, g: 249, b: 250 },
     fontWeight: 'bold',
+    alignment: 'left',
+    verticalAlignment: 'middle',
   },
   defaultTopBorder: {
     display: true,
@@ -490,7 +496,75 @@ export const bootstrapTableDesign: DesignConfig = {
     style: 'solid',
   },
   padding: '8 12 8 12',
-  hoverRowHighlight: { r: 248, g: 249, b: 250 },
+  hoverRowHighlight: { r: 242, g: 245, b: 250 },
   wordWrap: 'normal',
   dynamicRowHeight: true,
+  evenRowStyle: {
+    backgroundColor: { r: 255, g: 255, b: 255 },
+  },
+  oddRowStyle: {
+    backgroundColor: { r: 249, g: 250, b: 251 },
+  },
+  responsiveBreakpoints: true,
+  verticalAlignment: 'middle',
+};
+
+/**
+ * Dark Mode Table Design
+ * Augenschonendes Design für Nachtarbeit und dunkle Benutzeroberflächen
+ */
+export const darkModeTableDesign: DesignConfig = {
+  fontFamily: 'Inter, Roboto, system-ui, sans-serif',
+  fontSize: 13,
+  fontColor: { r: 220, g: 220, b: 220 },
+  backgroundColor: { r: 33, g: 37, b: 43 },
+  borderColor: { r: 60, g: 65, b: 70 },
+  borderWidth: 1,
+  headingRowStyle: {
+    backgroundColor: { r: 42, g: 47, b: 55 },
+    fontColor: { r: 240, g: 240, b: 240 },
+    fontWeight: 'bold',
+    borderBottom: {
+      display: true,
+      color: { r: 70, g: 75, b: 80 },
+      width: 1,
+      style: 'solid',
+    },
+  },
+  defaultTopBorder: {
+    display: true,
+    color: { r: 60, g: 65, b: 70 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultRightBorder: {
+    display: true,
+    color: { r: 60, g: 65, b: 70 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultBottomBorder: {
+    display: true,
+    color: { r: 60, g: 65, b: 70 },
+    width: 1,
+    style: 'solid',
+  },
+  defaultLeftBorder: {
+    display: true,
+    color: { r: 60, g: 65, b: 70 },
+    width: 1,
+    style: 'solid',
+  },
+  evenRowStyle: {
+    backgroundColor: { r: 33, g: 37, b: 43 },
+  },
+  oddRowStyle: {
+    backgroundColor: { r: 38, g: 42, b: 48 },
+  },
+  hoverRowHighlight: { r: 45, g: 50, b: 60 },
+  padding: '8 12 8 12',
+  borderCollapse: 'collapse',
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
+  verticalAlignment: 'middle',
 };
