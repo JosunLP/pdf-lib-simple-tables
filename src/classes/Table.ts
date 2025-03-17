@@ -103,9 +103,18 @@ export class PdfTable {
     const pdfDoc = await PDFDocument.create();
     const pdfFont = await this.fontManager.embedFont(pdfDoc);
     const opts = this.dataManager.getOptions();
+    // Berechne Zellenmaße anhand der Gesamtgröße, falls angegeben
+    let rowHeight = opts.rowHeight ?? 20;
+    let colWidth = opts.colWidth ?? 80;
+    if (opts.tableWidth) {
+      colWidth = opts.tableWidth / opts.columns;
+    }
+    if (opts.tableHeight) {
+      rowHeight = opts.tableHeight / opts.rows;
+    }
     const tableOptions = {
-      rowHeight: opts.rowHeight ?? 20,
-      colWidth: opts.colWidth ?? 80,
+      rowHeight,
+      colWidth,
       rows: opts.rows,
       columns: opts.columns,
     };
@@ -122,7 +131,6 @@ export class PdfTable {
     return pdfDoc;
   }
 
-  // PDF embedding
   async embedInPDF(existingDoc: PDFDocument, startX: number, startY: number): Promise<PDFDocument> {
     if (startX < 0 || startY < 0) {
       throw new Error('Invalid coordinates for embedInPDF');
@@ -130,18 +138,25 @@ export class PdfTable {
 
     let page = existingDoc.addPage();
     let currentY = startY;
-    const options = this.dataManager.getOptions();
-    const rowHeight = options.rowHeight || 20;
-    const colWidth = options.colWidth || 80;
+    const opts = this.dataManager.getOptions();
+    // Berechne Zellenmaße analog zu toPDF
+    let rowHeight = opts.rowHeight ?? 20;
+    let colWidth = opts.colWidth ?? 80;
+    if (opts.tableWidth) {
+      colWidth = opts.tableWidth / opts.columns;
+    }
+    if (opts.tableHeight) {
+      rowHeight = opts.tableHeight / opts.rows;
+    }
     const pdfFont = await existingDoc.embedFont(StandardFonts.Helvetica);
 
-    for (let row = 0; row < options.rows; row++) {
+    for (let row = 0; row < opts.rows; row++) {
       if (currentY - rowHeight < 50) {
         page = existingDoc.addPage();
         currentY = page.getSize().height - 50;
       }
       let x = startX;
-      for (let col = 0; col < options.columns; col++) {
+      for (let col = 0; col < opts.columns; col++) {
         const text = this.dataManager.getCell(row, col);
         page.drawText(text, {
           x: x + 5,
@@ -158,7 +173,7 @@ export class PdfTable {
     return existingDoc;
   }
 
-  // Delegate an den ImageEmbedder
+  // PDF embedding
   async embedTableAsImage(
     existingDoc: PDFDocument,
     imageBytes: Uint8Array,

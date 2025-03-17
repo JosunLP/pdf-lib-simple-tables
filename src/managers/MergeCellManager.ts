@@ -14,7 +14,11 @@ export class MergeCellManager {
     this.mergedCells.push({ startRow, startCol, endRow, endCol });
   }
 
+  // Angepasste Prüfung: Gibt einen zusammengeführten Bereich zurück,
+  // wenn (row, col) innerhalb des Bereichs liegt.
   findMergedCell(row: number, col: number): MergedCell | undefined {
-    return this.mergedCells.find((mc) => mc.startRow === row && mc.startCol === col);
+    return this.mergedCells.find(
+      (mc) => row >= mc.startRow && row <= mc.endRow && col >= mc.startCol && col <= mc.endCol,
+    );
   }
 }
