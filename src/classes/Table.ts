@@ -31,7 +31,7 @@ export class PdfTable {
   private mergeCellManager: MergeCellManager;
   private fontManager: FontManager;
   private imageEmbedder: ImageEmbedder;
-  private templateManager: TableTemplateManager;
+  public templateManager: TableTemplateManager;
 
   constructor(options: TableOptions) {
     // Set default values if not present and merge design config

@@ -2,10 +2,10 @@ import { PdfTable } from '../src';
 import fs from 'fs';
 
 async function createInvoiceExample(): Promise<void> {
-  console.log('Erstelle Beispiel-Rechnung...');
+  console.log('Erstelle Beispiel-Rechnung mit Template-System...');
 
   // Speichere die Anzahl der Kopfzeilen für spätere Verwendung
-  const repeatHeaderRows = 11;
+  const repeatHeaderRows = 0;
 
   // Erstelle eine Tabelle mit ausreichend Zeilen und Spalten für eine komplette Rechnung
   const table = new PdfTable({
@@ -14,9 +14,15 @@ async function createInvoiceExample(): Promise<void> {
     colWidth: 90, // Tabellenspaltenbreite
     rowHeight: 30, // Standard-Zeilenhöhe
     repeatHeaderRows: repeatHeaderRows, // Die Kopfzeilen bis einschließlich der Spaltenüberschriften wiederholen
-    headerRepetition: false, // Neue Option: wenn true (Standard), werden Header wiederholt, wenn false, werden sie nicht wiederholt
     pageBreakThreshold: 70, // Seitenumbruch, wenn weniger als 70 Punkte Platz verbleiben
   });
+
+  // Template "Invoice" anwenden
+  const template = table.templateManager.getTemplate('Invoice');
+  if (!template) {
+    throw new Error('Template "Invoice" not found');
+  }
+  table.applyTemplate(template);
 
   // ---- KOPFBEREICH MIT FIRMENINFOS UND LOGO ----
 
@@ -32,7 +38,7 @@ async function createInvoiceExample(): Promise<void> {
     borderWidth: 0,
   });
 
-  // Logo-Platzhalter (würde in einer realen Anwendung ein Bild einbetten)
+  // Logo-Platzhalter
   table.setCell(0, 3, '[LOGO]');
   table.mergeCells(0, 3, 0, 5);
   table.setCellStyle(0, 3, {
@@ -73,27 +79,21 @@ async function createInvoiceExample(): Promise<void> {
     borderWidth: 0,
   });
 
-  // Empfängeradresse - Zeilenumbrüche durch Trennzeichen ersetzt
+  // Empfängeradresse
   table.setCell(3, 0, 'Max Mustermann • Beispielweg 42 • 54321 Beispielstadt');
   table.mergeCells(3, 0, 5, 2);
-  table.setCellStyle(3, 0, {
-    fontSize: 12,
-    padding: '5 5 5 5',
-    alignment: 'left',
-    borderWidth: 0,
-  });
+  // Hier können wir auf Template-Formatierung für Adressen vertrauen
 
   // ---- RECHNUNGSDETAILS ----
 
   // Rechnung Titel
   table.setCell(3, 3, 'RECHNUNG');
   table.mergeCells(3, 3, 3, 5);
+  // Styling vom Template übernehmen, nur Ausrichtung anpassen
   table.setCellStyle(3, 3, {
     fontSize: 16,
     fontWeight: 'bold',
-    padding: '5 5 5 5',
     alignment: 'right',
-    borderWidth: 0,
   });
 
   // Rechnungsnummer, Datum etc.
@@ -107,21 +107,13 @@ async function createInvoiceExample(): Promise<void> {
     // Beschriftung
     table.setCell(4 + i, 3, invoiceDetails[i][0]);
     table.mergeCells(4 + i, 3, 4 + i, 4);
-    table.setCellStyle(4 + i, 3, {
-      fontSize: 10,
-      padding: '2 5 2 5',
-      alignment: 'right',
-      borderWidth: 0,
-    });
+    // Template-konforme Formatierung
 
     // Wert
     table.setCell(4 + i, 5, invoiceDetails[i][1]);
+    // Template-konforme Formatierung mit Fettschrift
     table.setCellStyle(4 + i, 5, {
-      fontSize: 10,
       fontWeight: 'bold',
-      padding: '2 5 2 5',
-      alignment: 'right',
-      borderWidth: 0,
     });
   }
 
@@ -130,9 +122,6 @@ async function createInvoiceExample(): Promise<void> {
   // Leere Zeile als Abstand
   table.setCell(7, 0, '');
   table.mergeCells(7, 0, 7, 5);
-  table.setCellStyle(7, 0, {
-    borderWidth: 0,
-  });
 
   // Rechnungsbetreff
   table.setCell(8, 0, 'Rechnung für erbrachte Dienstleistungen im März 2023');
@@ -140,27 +129,15 @@ async function createInvoiceExample(): Promise<void> {
   table.setCellStyle(8, 0, {
     fontSize: 14,
     fontWeight: 'bold',
-    padding: '5 5 5 5',
-    borderWidth: 0,
   });
 
   // Anrede und Text - Aufteilen in zwei separate Zellen
   table.setCell(9, 0, 'Sehr geehrter Herr Mustermann,');
   table.mergeCells(9, 0, 9, 5);
-  table.setCellStyle(9, 0, {
-    fontSize: 11,
-    padding: '5 5 3 5',
-    borderWidth: 0,
-  });
 
   // Zweiter Teil des Texts in neuer Zelle
   table.setCell(10, 0, 'hiermit stellen wir Ihnen die folgenden Leistungen in Rechnung:');
   table.mergeCells(10, 0, 10, 5);
-  table.setCellStyle(10, 0, {
-    fontSize: 11,
-    padding: '3 5 10 5',
-    borderWidth: 0,
-  });
 
   // ---- TABELLENKOPF FÜR POSITIONEN ----
 
@@ -168,18 +145,7 @@ async function createInvoiceExample(): Promise<void> {
 
   for (let i = 0; i < headers.length; i++) {
     table.setCell(11, i, headers[i]);
-    table.setCellStyle(11, i, {
-      fontSize: 11,
-      fontWeight: 'bold',
-      padding: '5 5 5 5',
-      alignment: i >= 2 ? 'right' : 'left',
-      backgroundColor: { r: 240, g: 240, b: 240 },
-      bottomBorder: {
-        width: 1,
-        color: { r: 100, g: 100, b: 100 },
-        style: 'solid',
-      },
-    });
+    // Das Template kümmert sich um die Header-Formatierung
   }
 
   // ---- POSITIONEN ----
@@ -375,17 +341,8 @@ async function createInvoiceExample(): Promise<void> {
   for (let row = 0; row < items.length; row++) {
     for (let col = 0; col < items[row].length; col++) {
       table.setCell(12 + row, col, items[row][col]);
-      table.setCellStyle(12 + row, col, {
-        fontSize: 10,
-        padding: '10 5 10 5',
-        alignment: col >= 2 ? 'right' : 'left',
-        borderWidth: 0,
-        bottomBorder: {
-          width: 1,
-          color: { r: 230, g: 230, b: 230 },
-          style: 'solid',
-        },
-      });
+      // Hier nutzen wir die Template-Formatierung für Zellen
+      // Die Ausrichtung für numerische Spalten ist bereits im Template definiert
     }
   }
 
@@ -414,74 +371,30 @@ async function createInvoiceExample(): Promise<void> {
   // Leerzeile
   table.setCell(summaryRowStart - 1, 0, '');
   table.mergeCells(summaryRowStart - 1, 0, summaryRowStart - 1, 5);
-  table.setCellStyle(summaryRowStart - 1, 0, {
-    borderWidth: 0,
-  });
 
   // Zwischensumme
   table.setCell(summaryRowStart, 3, 'Zwischensumme:');
   table.mergeCells(summaryRowStart, 3, summaryRowStart, 4);
-  table.setCellStyle(summaryRowStart, 3, {
-    fontSize: 11,
-    padding: '5 5 5 5',
-    alignment: 'right',
-    borderWidth: 0,
-  });
+  // Das Template kümmert sich um die Formatierung für Summen
 
   table.setCell(summaryRowStart, 5, formattedSubtotal);
-  table.setCellStyle(summaryRowStart, 5, {
-    fontSize: 11,
-    padding: '5 5 5 5',
-    alignment: 'right',
-    borderWidth: 0,
-  });
 
   // MwSt
   table.setCell(summaryRowStart + 1, 3, 'MwSt. 19%:');
   table.mergeCells(summaryRowStart + 1, 3, summaryRowStart + 1, 4);
-  table.setCellStyle(summaryRowStart + 1, 3, {
-    fontSize: 11,
-    padding: '5 5 5 5',
-    alignment: 'right',
-    borderWidth: 0,
-  });
 
   table.setCell(summaryRowStart + 1, 5, formattedVat);
-  table.setCellStyle(summaryRowStart + 1, 5, {
-    fontSize: 11,
-    padding: '5 5 5 5',
-    alignment: 'right',
-    borderWidth: 0,
-  });
 
   // Gesamtsumme
   table.setCell(summaryRowStart + 2, 3, 'Gesamtbetrag:');
   table.mergeCells(summaryRowStart + 2, 3, summaryRowStart + 2, 4);
   table.setCellStyle(summaryRowStart + 2, 3, {
-    fontSize: 12,
     fontWeight: 'bold',
-    padding: '5 5 5 5',
-    alignment: 'right',
-    borderWidth: 0,
-    topBorder: {
-      width: 1,
-      color: { r: 100, g: 100, b: 100 },
-      style: 'solid',
-    },
   });
 
   table.setCell(summaryRowStart + 2, 5, formattedTotal);
   table.setCellStyle(summaryRowStart + 2, 5, {
-    fontSize: 12,
     fontWeight: 'bold',
-    padding: '5 5 5 5',
-    alignment: 'right',
-    borderWidth: 0,
-    topBorder: {
-      width: 1,
-      color: { r: 100, g: 100, b: 100 },
-      style: 'solid',
-    },
   });
 
   // ---- ZAHLUNGSINFORMATIONEN ----
@@ -489,34 +402,20 @@ async function createInvoiceExample(): Promise<void> {
   // Leerzeile
   table.setCell(summaryRowStart + 3, 0, '');
   table.mergeCells(summaryRowStart + 3, 0, summaryRowStart + 3, 5);
-  table.setCellStyle(summaryRowStart + 3, 0, {
-    borderWidth: 0,
-  });
 
   // Zahlungsbedingungen
   table.setCell(summaryRowStart + 4, 0, 'Zahlungsbedingungen:');
   table.setCellStyle(summaryRowStart + 4, 0, {
-    fontSize: 11,
     fontWeight: 'bold',
-    padding: '5 5 5 5',
-    borderWidth: 0,
   });
 
   table.setCell(summaryRowStart + 4, 1, 'Bitte überweisen Sie den Betrag innerhalb von 14 Tagen.');
   table.mergeCells(summaryRowStart + 4, 1, summaryRowStart + 4, 5);
-  table.setCellStyle(summaryRowStart + 4, 1, {
-    fontSize: 11,
-    padding: '5 5 5 5',
-    borderWidth: 0,
-  });
 
   // Bankdaten
   table.setCell(summaryRowStart + 5, 0, 'Bankverbindung:');
   table.setCellStyle(summaryRowStart + 5, 0, {
-    fontSize: 11,
     fontWeight: 'bold',
-    padding: '5 5 5 5',
-    borderWidth: 0,
   });
 
   table.setCell(
@@ -525,19 +424,11 @@ async function createInvoiceExample(): Promise<void> {
     'Musterfirma GmbH • IBAN: DE12 3456 7890 1234 5678 90 • BIC: DEUTDEMMXXX',
   );
   table.mergeCells(summaryRowStart + 5, 1, summaryRowStart + 5, 5);
-  table.setCellStyle(summaryRowStart + 5, 1, {
-    fontSize: 11,
-    padding: '5 5 5 5',
-    borderWidth: 0,
-  });
 
   // Zusätzliche Hinweise für die Mehrseitigkeit
   table.setCell(summaryRowStart + 6, 0, 'Hinweise:');
   table.setCellStyle(summaryRowStart + 6, 0, {
-    fontSize: 11,
     fontWeight: 'bold',
-    padding: '5 5 5 5',
-    borderWidth: 0,
   });
 
   table.setCell(
@@ -546,26 +437,17 @@ async function createInvoiceExample(): Promise<void> {
     'Diese Rechnung ist mehrseitig und wurde automatisch generiert. Bitte beachten Sie, dass alle Seiten zur Rechnung gehören.',
   );
   table.mergeCells(summaryRowStart + 6, 1, summaryRowStart + 6, 5);
-  table.setCellStyle(summaryRowStart + 6, 1, {
-    fontSize: 11,
-    padding: '5 5 5 5',
-    borderWidth: 0,
-  });
 
   // ---- FUSSZEILE ----
 
   // Leerzeile vor Fußzeile
   table.setCell(summaryRowStart + 7, 0, '');
   table.mergeCells(summaryRowStart + 7, 0, summaryRowStart + 7, 5);
-  table.setCellStyle(summaryRowStart + 7, 0, {
-    borderWidth: 0,
-  });
 
   // Trennlinie
   table.setCell(summaryRowStart + 8, 0, '');
   table.mergeCells(summaryRowStart + 8, 0, summaryRowStart + 8, 5);
   table.setCellStyle(summaryRowStart + 8, 0, {
-    borderWidth: 0,
     topBorder: {
       width: 1,
       color: { r: 200, g: 200, b: 200 },
@@ -583,8 +465,6 @@ async function createInvoiceExample(): Promise<void> {
   table.setCellStyle(summaryRowStart + 9, 0, {
     fontSize: 8,
     alignment: 'center',
-    padding: '5 5 5 5',
-    borderWidth: 0,
   });
 
   // Generieren des PDFs
@@ -597,6 +477,7 @@ async function createInvoiceExample(): Promise<void> {
     'Die ersten ' + repeatHeaderRows + ' Zeilen werden als Kopfzeilen auf jeder Seite wiederholt.',
   );
   console.log('Gesamtbetrag: ' + formattedTotal + ' (inkl. MwSt)');
+  console.log('Das Template "Invoice" wurde für die Formatierung verwendet.');
 }
 
 // Ausführen der Beispielfunktion
