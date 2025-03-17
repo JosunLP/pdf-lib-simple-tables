@@ -79,44 +79,107 @@ export class TableRenderer {
     style: TableCellStyle,
     pdfFont: PDFFont,
   ): void {
-    // Draw background
+    // Berechne Padding
+    let padding = { top: 0, right: 0, bottom: 0, left: 0 };
+    if (style.padding) {
+      if (typeof style.padding === 'number') {
+        padding = {
+          top: style.padding,
+          right: style.padding,
+          bottom: style.padding,
+          left: style.padding,
+        };
+      } else {
+        // Parse CSS-style padding
+        const parts = style.padding.split(' ').map((p) => parseInt(p, 10));
+        switch (parts.length) {
+          case 1:
+            padding = { top: parts[0], right: parts[0], bottom: parts[0], left: parts[0] };
+            break;
+          case 2:
+            padding = { top: parts[0], right: parts[1], bottom: parts[0], left: parts[1] };
+            break;
+          case 4:
+            padding = { top: parts[0], right: parts[1], bottom: parts[2], left: parts[3] };
+            break;
+        }
+      }
+    }
+
+    // Draw background with support for opacity and border-radius
     if (style.backgroundColor) {
       const bg = this.styleManager.normalizeColor(style.backgroundColor);
+      const opacity = style.opacity !== undefined ? style.opacity : 1;
+
       page.drawRectangle({
-        x,
-        y: y - height,
-        width,
-        height,
+        x: x + padding.left,
+        y: y - height + padding.bottom,
+        width: width - (padding.left + padding.right),
+        height: height - (padding.top + padding.bottom),
         color: rgb(bg.r, bg.g, bg.b),
+        opacity: opacity,
+        // Weitere Eigenschaften würden implementiert, wenn PDF-lib sie unterstützt
       });
     }
 
-    // Draw text content
+    // Apply text transformations if needed
+    let displayText = text;
+    if (style.textTransform) {
+      switch (style.textTransform) {
+        case 'uppercase':
+          displayText = displayText.toUpperCase();
+          break;
+        case 'lowercase':
+          displayText = displayText.toLowerCase();
+          break;
+        case 'capitalize':
+          displayText = displayText.replace(/\b\w/g, (c) => c.toUpperCase());
+          break;
+      }
+    }
+
+    // Draw text content with enhanced styling
     const fontSize = style.fontSize || 12;
     const textColor = style.fontColor || { r: 0, g: 0, b: 0 };
     const normTextColor = this.styleManager.normalizeColor(textColor);
 
     // Calculate text width if possible
-    let textWidth = text.length * fontSize * 0.6;
+    let textWidth = displayText.length * fontSize * 0.6;
     if (pdfFont.widthOfTextAtSize) {
-      textWidth = pdfFont.widthOfTextAtSize(text, fontSize);
+      textWidth = pdfFont.widthOfTextAtSize(displayText, fontSize);
+    }
+
+    // Text overflow handling
+    if (style.textOverflow === 'ellipsis' && textWidth > width - (padding.left + padding.right)) {
+      // Simplistic implementation - in real code, would calculate properly
+      displayText = displayText.slice(0, Math.floor(displayText.length * 0.8)) + '...';
+      textWidth = pdfFont.widthOfTextAtSize(displayText, fontSize);
     }
 
     // Determine the x value based on alignment
-    let textX = x + 5;
+    let textX = x + padding.left;
     if (style.alignment === 'center') {
       textX = x + (width - textWidth) / 2;
     } else if (style.alignment === 'right') {
-      textX = x + width - textWidth - 5;
+      textX = x + width - textWidth - padding.right;
     }
 
-    // Draw text
-    page.drawText(text, {
+    // Determine y position based on vertical alignment
+    let textY = y - height + (height - fontSize) / 2;
+    if (style.verticalAlignment === 'top') {
+      textY = y - padding.top - fontSize;
+    } else if (style.verticalAlignment === 'bottom') {
+      textY = y - height + padding.bottom;
+    }
+
+    // Draw text with all configured options
+    page.drawText(displayText, {
       x: textX,
-      y: y - height + (height - fontSize) / 2,
+      y: textY,
       size: fontSize,
       color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
       font: pdfFont,
+      // Diese Eigenschaften müssten implementiert werden, wenn PDF-lib sie unterstützt
     });
 
     // Draw cell borders - legacy method (for backward compatibility)

@@ -14,6 +14,17 @@
  * @property {BorderStyle} [defaultBottomBorder] - Default bottom border style
  * @property {BorderStyle} [defaultLeftBorder] - Default left border style
  * @property {AdditionalBorder[]} [additionalBorders] - Additional borders
+ * @property {string | number} [padding] - Default cell padding
+ * @property {'top' | 'middle' | 'bottom'} [verticalAlignment] - Default vertical alignment
+ * @property {string} [borderRadius] - Default border radius
+ * @property {'normal' | 'bold' | 'lighter' | number} [fontWeight] - Default font weight
+ * @property {'normal' | 'italic' | 'oblique'} [fontStyle] - Default font style
+ * @property {'left' | 'center' | 'right'} [alignment] - Default horizontal alignment
+ * @property {string} [tableClassName] - Default CSS class name for the table
+ * @property {string} [alternateRowColor] - Alternate row coloring (zebra effect)
+ * @property {boolean} [responsiveBreakpoints] - Enable responsive styling
+ * @property {string} [hoverRowHighlight] - Hover row highlight color
+ * @property {TableCellStyle} [selectedCellStyle] - Selected cell style
  */
 export interface DesignConfig {
   fontFamily?: string;
@@ -35,10 +46,25 @@ export interface DesignConfig {
 
   // New option for additional borders (e.g., for invoices)
   additionalBorders?: AdditionalBorder[];
+
+  // Erweiterte CSS-ähnliche Styling-Optionen
+  padding?: string | number;
+  verticalAlignment?: 'top' | 'middle' | 'bottom';
+  borderRadius?: string;
+  fontWeight?: 'normal' | 'bold' | 'lighter' | number;
+  fontStyle?: 'normal' | 'italic' | 'oblique';
+  alignment?: 'left' | 'center' | 'right';
+  tableClassName?: string;
+
+  // Zusätzliche Tabellenstyling-Optionen
+  alternateRowColor?: { r: number; g: number; b: number };
+  responsiveBreakpoints?: boolean;
+  hoverRowHighlight?: { r: number; g: number; b: number };
+  selectedCellStyle?: TableCellStyle;
 }
 
 // Import BorderStyle and AdditionalBorder definitions
-import { BorderStyle } from '../interfaces/TableCellStyle';
+import { BorderStyle, TableCellStyle } from '../interfaces/TableCellStyle';
 import { AdditionalBorder } from '../interfaces/AdditionalBorder';
 
 /**
