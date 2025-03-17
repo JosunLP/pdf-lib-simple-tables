@@ -42,6 +42,8 @@
  * @property {TableCellStyle} [lastRowStyle] - Style for the last row
  * @property {TableCellStyle} [firstColumnStyle] - Style for the first column
  * @property {TableCellStyle} [lastColumnStyle] - Style for the last column
+ * @property {'normal' | 'break-word' | 'none'} [wordWrap] - Text wrapping behavior
+ * @property {boolean} [dynamicRowHeight] - Whether rows should grow to fit content
  */
 export interface DesignConfig {
   fontFamily?: string;
@@ -108,6 +110,10 @@ export interface DesignConfig {
   lastRowStyle?: TableCellStyle; // Spezielle Formatierung für letzte Zeile
   firstColumnStyle?: TableCellStyle; // Spezielle Formatierung für erste Spalte
   lastColumnStyle?: TableCellStyle; // Spezielle Formatierung für letzte Spalte
+
+  // Neue Eigenschaften für Textumbruch und dynamische Zeilenhöhe
+  wordWrap?: 'normal' | 'break-word' | 'none';
+  dynamicRowHeight?: boolean;
 }
 
 // Import BorderStyle and AdditionalBorder definitions
@@ -198,6 +204,10 @@ export const defaultDesignConfig: DesignConfig = {
   padding: '5 5 5 5', // Oben, Rechts, Unten, Links
   verticalAlignment: 'middle',
   alignment: 'left',
+
+  // Neue Standardwerte für Textumbruch und dynamische Zeilenhöhe
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 /**
@@ -232,6 +242,8 @@ export const materialDesignConfig: DesignConfig = {
   headingColumnStyle: {
     backgroundColor: { r: 250, g: 250, b: 250 },
   },
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 // New design templates
@@ -244,6 +256,8 @@ export const classicDesignConfig: DesignConfig = {
   backgroundColor: { r: 255, g: 255, b: 255 },
   borderColor: { r: 150, g: 150, b: 150 },
   borderWidth: 1,
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 // Modern: Clean lines and minimalist design.
@@ -254,6 +268,8 @@ export const modernDesignConfig: DesignConfig = {
   backgroundColor: { r: 245, g: 245, b: 245 },
   borderColor: { r: 200, g: 200, b: 200 },
   borderWidth: 0.5,
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 // High Contrast: For good visibility with strong contrast.
@@ -264,6 +280,8 @@ export const highContrastDesignConfig: DesignConfig = {
   backgroundColor: { r: 0, g: 0, b: 0 },
   borderColor: { r: 255, g: 255, b: 255 },
   borderWidth: 2,
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 /**
@@ -306,6 +324,8 @@ export const financialTableDesign: DesignConfig = {
       fontWeight: 'bold',
     },
   },
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 /**
@@ -342,6 +362,8 @@ export const dashboardTableDesign: DesignConfig = {
     display: false,
   },
   padding: '12 16 12 16',
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 /**
@@ -392,6 +414,8 @@ export const dataTableDesign: DesignConfig = {
       },
     },
   ],
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 /**
@@ -424,6 +448,8 @@ export const minimalistTableDesign: DesignConfig = {
   },
   defaultLeftBorder: { display: false },
   padding: '8 16 8 16',
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };
 
 /**
@@ -465,4 +491,6 @@ export const bootstrapTableDesign: DesignConfig = {
   },
   padding: '8 12 8 12',
   hoverRowHighlight: { r: 248, g: 249, b: 250 },
+  wordWrap: 'normal',
+  dynamicRowHeight: true,
 };

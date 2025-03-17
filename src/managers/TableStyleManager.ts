@@ -6,7 +6,8 @@ import { TableCellStyle } from '../interfaces/TableCellStyle';
  * Kümmert sich um die Anwendung und Kombination von Zellen-Styles
  */
 export class TableStyleManager {
-  private designConfig: DesignConfig;
+  // Diese Property muss öffentlich sein, damit der TableRenderer auf die wordWrap-Eigenschaft zugreifen kann
+  public designConfig: DesignConfig;
 
   constructor(designConfig: DesignConfig) {
     this.designConfig = designConfig;

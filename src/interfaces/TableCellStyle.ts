@@ -56,6 +56,7 @@ import { AdditionalBorder } from './AdditionalBorder';
  * @property {number} [columnSpan] - Column span
  * @property {number} [rowSpan] - Row span
  * @property {TableCellStyle} [printStyle] - Style specifically for printing
+ * @property {'normal' | 'break-word' | 'none'} [wordWrap] - Text wrapping behavior
  */
 export interface TableCellStyle {
   fontSize?: number;
@@ -104,4 +105,5 @@ export interface TableCellStyle {
 
   // Medienspezifisches Styling
   printStyle?: TableCellStyle; // Stil speziell für den Druck
+  wordWrap?: 'normal' | 'break-word' | 'none';
 }
