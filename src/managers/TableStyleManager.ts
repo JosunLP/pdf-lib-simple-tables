@@ -23,28 +23,27 @@ export class TableStyleManager {
     if (row === 0 && this.designConfig.headingRowStyle) {
       effectiveStyle = { ...this.designConfig.headingRowStyle, ...effectiveStyle };
     }
-
-    // Anwenden von Kopfspaltenstilen, wenn anwendbar
     if (col === 0 && this.designConfig.headingColumnStyle) {
       effectiveStyle = { ...this.designConfig.headingColumnStyle, ...effectiveStyle };
     }
 
-    // Anwenden von Standard-Rahmenlinien-Stilen, falls keine spezifischen definiert wurden
-    if (!effectiveStyle.topBorder && this.designConfig.defaultTopBorder) {
-      effectiveStyle.topBorder = { ...this.designConfig.defaultTopBorder };
-    }
-
-    if (!effectiveStyle.rightBorder && this.designConfig.defaultRightBorder) {
-      effectiveStyle.rightBorder = { ...this.designConfig.defaultRightBorder };
-    }
-
-    if (!effectiveStyle.bottomBorder && this.designConfig.defaultBottomBorder) {
-      effectiveStyle.bottomBorder = { ...this.designConfig.defaultBottomBorder };
-    }
-
-    if (!effectiveStyle.leftBorder && this.designConfig.defaultLeftBorder) {
-      effectiveStyle.leftBorder = { ...this.designConfig.defaultLeftBorder };
-    }
+    // Vereinfachte Zusammenführung der Standard-Rahmenlinien
+    const borderMapping: { [key: string]: string } = {
+      topBorder: 'defaultTopBorder',
+      rightBorder: 'defaultRightBorder',
+      bottomBorder: 'defaultBottomBorder',
+      leftBorder: 'defaultLeftBorder',
+    };
+    Object.keys(borderMapping).forEach((borderKey) => {
+      if (
+        !(effectiveStyle as Record<string, unknown>)[borderKey] &&
+        (this.designConfig as Record<string, unknown>)[borderMapping[borderKey]]
+      ) {
+        (effectiveStyle as Record<string, unknown>)[borderKey] = {
+          ...((this.designConfig as Record<string, unknown>)[borderMapping[borderKey]] as object),
+        };
+      }
+    });
 
     // Merge additionalBorders aus DesignConfig und userStyle
     effectiveStyle.additionalBorders = [
