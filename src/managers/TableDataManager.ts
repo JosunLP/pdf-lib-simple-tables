@@ -92,7 +92,11 @@ export class TableDataManager {
     }
   }
 
+  /**
+   * Returns the current table options
+   * @returns {TableOptions} The current table options
+   */
   getOptions(): TableOptions {
-    return this.options;
+    return { ...this.options }; // Return a copy to prevent modification
   }
 }

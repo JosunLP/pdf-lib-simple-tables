@@ -10,6 +10,8 @@ import { DesignConfig } from '../config/DesignConfig';
  * @property {DesignConfig} [designConfig] - Abstract design configuration
  * @property {number} [tableWidth] - Total width of the table
  * @property {number} [tableHeight] - Total height of the table
+ * @property {number} [repeatHeaderRows] - Number of header rows to repeat on each page
+ * @property {number} [pageBreakThreshold] - Distance to the page end at which a page break should occur
  */
 export interface TableOptions {
   columns: number;
@@ -19,4 +21,6 @@ export interface TableOptions {
   designConfig?: DesignConfig;
   tableWidth?: number;
   tableHeight?: number;
+  repeatHeaderRows?: number; // Number of header rows to repeat on each page
+  pageBreakThreshold?: number; // Distance to the page end at which a page break should occur
 }

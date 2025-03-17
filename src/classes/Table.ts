@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { CustomFont } from '../models/CustomFont';
 import { defaultDesignConfig, DesignConfig } from '../config/DesignConfig';
 import { TableCellStyle } from '../interfaces/TableCellStyle';
@@ -117,6 +117,8 @@ export class PdfTable {
       colWidth,
       rows: opts.rows,
       columns: opts.columns,
+      repeatHeaderRows: opts.repeatHeaderRows,
+      pageBreakThreshold: opts.pageBreakThreshold,
     };
 
     await this.tableRenderer.drawTable(
@@ -136,9 +138,9 @@ export class PdfTable {
       throw new Error('Invalid coordinates for embedInPDF');
     }
 
-    let page = existingDoc.addPage();
-    let currentY = startY;
     const opts = this.dataManager.getOptions();
+    const pdfFont = await existingDoc.embedFont(StandardFonts.Helvetica);
+
     // Berechne Zellenmaße analog zu toPDF
     let rowHeight = opts.rowHeight ?? 20;
     let colWidth = opts.colWidth ?? 80;
@@ -148,27 +150,43 @@ export class PdfTable {
     if (opts.tableHeight) {
       rowHeight = opts.tableHeight / opts.rows;
     }
-    const pdfFont = await existingDoc.embedFont(StandardFonts.Helvetica);
 
-    for (let row = 0; row < opts.rows; row++) {
-      if (currentY - rowHeight < 50) {
-        page = existingDoc.addPage();
-        currentY = page.getSize().height - 50;
-      }
-      let x = startX;
-      for (let col = 0; col < opts.columns; col++) {
-        const text = this.dataManager.getCell(row, col);
-        page.drawText(text, {
-          x: x + 5,
-          y: currentY - rowHeight + 5,
-          size: 12,
-          font: pdfFont,
-          color: rgb(0, 0, 0),
-        });
-        x += colWidth;
-      }
-      currentY -= rowHeight;
+    // Verwende TableRenderer für konsistentes Rendering mit Seitenumbruch
+    const tableOptions = {
+      rowHeight,
+      colWidth,
+      rows: opts.rows,
+      columns: opts.columns,
+      repeatHeaderRows: opts.repeatHeaderRows,
+      pageBreakThreshold: opts.pageBreakThreshold ?? 50,
+    };
+
+    // Erste Seite hinzufügen wenn noch keine vorhanden
+    if (existingDoc.getPageCount() === 0) {
+      existingDoc.addPage();
     }
+
+    // Anpassen des initialen Y-Werts
+    const firstPage = existingDoc.getPage(existingDoc.getPageCount() - 1);
+    const initialY = startY > 0 ? startY : firstPage.getSize().height - 50;
+
+    // Modifizierter TableRenderer für existierendes Dokument
+    const customRenderer = new TableRenderer(this.borderRenderer, this.styleManager);
+
+    // Seitenumbruch mit TableRenderer
+    await customRenderer.drawTable(
+      existingDoc,
+      pdfFont,
+      this.dataManager.getData(),
+      this.dataManager.getCellStyles(),
+      this.mergeCellManager.getMergedCells(),
+      {
+        ...tableOptions,
+        startX: startX,
+        startY: initialY,
+        useExistingPages: true,
+      },
+    );
 
     return existingDoc;
   }

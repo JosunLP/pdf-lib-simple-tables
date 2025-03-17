@@ -105,15 +105,35 @@ export class TableRenderer {
     data: string[][],
     cellStyles: TableCellStyle[][],
     mergedCells: MergedCell[],
-    options: { rowHeight: number; colWidth: number; rows: number; columns: number },
+    options: {
+      rowHeight: number;
+      colWidth: number;
+      rows: number;
+      columns: number;
+      repeatHeaderRows?: number;
+      pageBreakThreshold?: number;
+      startX?: number;
+      startY?: number;
+      useExistingPages?: boolean;
+    },
   ): Promise<PDFDocument> {
-    let page = pdfDoc.addPage();
+    // Verwende bestehende Seite oder füge eine neue hinzu
+    let page: PDFPage;
+
+    if (options.useExistingPages && pdfDoc.getPageCount() > 0) {
+      page = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
+    } else {
+      page = pdfDoc.addPage();
+    }
+
     const { height } = page.getSize();
 
     // Start position for the table
-    const startX = 50;
-    let currentY = height - 50;
+    const startX = options.startX ?? 50;
+    let currentY = options.startY ?? height - 50;
     const { colWidth } = options;
+    const pageBreakThreshold = options.pageBreakThreshold ?? 50;
+    const repeatHeaderRows = options.repeatHeaderRows ?? 0;
 
     // Prüfen, ob dynamische Zeilenhöhe aktiviert ist
     const dynamicRowHeight = this.styleManager.designConfig.dynamicRowHeight !== false;
@@ -191,14 +211,90 @@ export class TableRenderer {
       }
     }
 
+    // Funktion zum Zeichnen einer Header-Zeile
+    const drawHeaderRows = () => {
+      if (repeatHeaderRows <= 0) return currentY;
+
+      let headerY = currentY;
+
+      for (
+        let headerRow = 0;
+        headerRow < repeatHeaderRows && headerRow < options.rows;
+        headerRow++
+      ) {
+        let x = startX;
+
+        for (let col = 0; col < options.columns; col++) {
+          const isPartOfMergedCell = mergedCells.some(
+            (mc) =>
+              headerRow > mc.startRow &&
+              headerRow <= mc.endRow &&
+              col >= mc.startCol &&
+              col <= mc.endCol,
+          );
+
+          if (isPartOfMergedCell) {
+            x += colWidth;
+            continue;
+          }
+
+          const merged = mergedCells.find((mc) => mc.startRow === headerRow && mc.startCol === col);
+
+          let cellWidth = colWidth;
+          let cellHeight = rowHeights[headerRow];
+
+          if (merged) {
+            cellWidth = colWidth * (merged.endCol - merged.startCol + 1);
+            cellHeight = rowHeights
+              .slice(headerRow, merged.endRow + 1)
+              .reduce((sum, h) => sum + h, 0);
+          }
+
+          const style = this.styleManager.getEffectiveCellStyle(
+            headerRow,
+            col,
+            cellStyles[headerRow][col],
+          );
+
+          // Draw background, text, border, etc.
+          this.drawCell(
+            page,
+            x,
+            headerY,
+            cellWidth,
+            cellHeight,
+            data[headerRow][col] || '',
+            style,
+            pdfFont,
+          );
+
+          x += cellWidth;
+        }
+
+        headerY -= rowHeights[headerRow];
+      }
+
+      return headerY;
+    };
+
     // Iterate over each row and column
     for (let row = 0; row < options.rows; row++) {
       const rowHeight = rowHeights[row];
 
       // Create a new page if there is not enough space
-      if (currentY - rowHeight < 50) {
+      if (currentY - rowHeight < pageBreakThreshold) {
         page = pdfDoc.addPage();
         currentY = page.getSize().height - 50;
+
+        // Wenn Header-Zeilen wiederholt werden sollen, zeichne sie
+        if (repeatHeaderRows > 0) {
+          currentY = drawHeaderRows();
+        }
+      }
+
+      // Skip drawing header rows again if they were already drawn as repeating headers
+      if (row < repeatHeaderRows && currentY !== height - 50 && currentY !== options.startY) {
+        continue;
       }
 
       let x = startX;
