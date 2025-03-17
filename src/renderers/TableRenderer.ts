@@ -354,7 +354,7 @@ export class TableRenderer {
   /**
    * Zeichnet eine einzelne Zelle
    */
-  private drawCell(
+  drawCell(
     page: PDFPage,
     x: number,
     y: number,

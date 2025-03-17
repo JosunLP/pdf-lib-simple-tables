@@ -22,6 +22,10 @@ export class FontManager {
     }
   }
 
+  getCustomFont(): CustomFont | undefined {
+    return this.customFont;
+  }
+
   private base64ToUint8Array(base64: string): Uint8Array {
     // Wenn Buffer vorhanden ist (Node-Umgebung), diesen verwenden
     if (typeof Buffer !== 'undefined') {
