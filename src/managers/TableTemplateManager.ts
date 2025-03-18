@@ -1,17 +1,28 @@
 import { TableTemplate } from '../templates/TableTemplate';
 import { DesignConfig } from '../config/DesignConfig';
 import { TableCellStyle } from '../interfaces/TableCellStyle';
+import { predefinedTemplates } from '../templates/predefinedTemplates';
 
 /**
  * Manager für Tabellen-Templates
  * Kümmert sich um das Laden, Speichern und Konvertieren von Templates
  */
 export class TableTemplateManager {
-  private templates: Map<string, TableTemplate> = new Map();
+  private templates: Map<string, TableTemplate>;
+
+  constructor() {
+    this.templates = new Map<string, TableTemplate>();
+
+    // Lade vordefinierte Templates
+    predefinedTemplates.forEach((template) => {
+      this.addTemplate(template);
+    });
+  }
 
   /**
-   * Fügt ein Template hinzu
-   * @param template TableTemplate-Objekt
+   * Fügt ein neues Template hinzu
+   * @param template Das hinzuzufügende Template
+   * @throws Error wenn das Template keinen Namen hat
    */
   addTemplate(template: TableTemplate): void {
     if (!template.name) {
@@ -21,14 +32,33 @@ export class TableTemplateManager {
   }
 
   /**
+   * Entfernt ein Template anhand seines Namens
+   * @param name Name des zu entfernenden Templates
+   */
+  removeTemplate(name: string): void {
+    this.templates.delete(name);
+  }
+
+  /**
    * Lädt ein Template aus einem JSON-String
    * @param jsonString JSON-String mit Template-Definition
+   * @throws Error wenn das JSON ungültig ist oder erforderliche Eigenschaften fehlen
    */
   loadTemplateFromJson(jsonString: string): void {
     try {
-      const template = JSON.parse(jsonString) as TableTemplate;
+      const parsed = JSON.parse(jsonString);
+
+      // Überprüfe, ob es sich um ein gültiges Template handelt
+      if (!parsed.name || !parsed.baseStyle) {
+        throw new Error('Ungültiges Template-Format: name und baseStyle sind erforderlich');
+      }
+
+      const template = parsed as TableTemplate;
       this.addTemplate(template);
     } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error(`Fehler beim Laden des Templates: SyntaxError: ${error.message}`);
+      }
       throw new Error(`Fehler beim Laden des Templates: ${error}`);
     }
   }
@@ -36,9 +66,26 @@ export class TableTemplateManager {
   /**
    * Gibt ein Template anhand seines Namens zurück
    * @param name Name des Templates
+   * @param fallbackToDefault Wenn true, wird ein Standard-Template zurückgegeben, falls kein Template gefunden wurde
+   * @returns Das gefundene Template oder undefined
    */
-  getTemplate(name: string): TableTemplate | undefined {
-    return this.templates.get(name);
+  getTemplate(name: string, fallbackToDefault = false): TableTemplate | undefined {
+    const template = this.templates.get(name);
+    if (!template && fallbackToDefault) {
+      return this.templates.get('Default');
+    }
+    return template;
+  }
+
+  /**
+   * Exportiert ein Template als JSON-String
+   * @param name Name des zu exportierenden Templates
+   * @returns JSON-String oder undefined, wenn das Template nicht gefunden wurde
+   */
+  exportTemplateAsJson(name: string): string | undefined {
+    const template = this.getTemplate(name);
+    if (!template) return undefined;
+    return JSON.stringify(template, null, 2);
   }
 
   /**
@@ -89,19 +136,18 @@ export class TableTemplateManager {
       // Weitere Basis-Eigenschaften aus baseStyle übernehmen
       fontWeight: templateObj.baseStyle.fontWeight,
       fontStyle: templateObj.baseStyle.fontStyle,
-      alignment: templateObj.baseStyle.alignment,
-      // This verticalAlignment will be potentially overridden by advanced settings below
+      alignment: templateObj.advanced?.horizontalAlignment || templateObj.baseStyle.alignment,
       borderRadius:
         typeof templateObj.baseStyle.borderRadius === 'number'
           ? templateObj.baseStyle.borderRadius.toString()
           : templateObj.baseStyle.borderRadius,
       textDecoration: templateObj.baseStyle.textDecoration,
-      // textTransform is set in the advanced settings section below
-      // Base vertical alignment - will be overridden below if advanced settings exist
+      textTransform: templateObj.baseStyle.textTransform,
+      verticalAlignment:
+        templateObj.advanced?.verticalAlignment || templateObj.baseStyle.verticalAlignment,
 
-      // Rahmen-Eigenschaften übernehmen
-      // Border properties will be set later using templateObj.borders
-      // additionalBorders property is not used in DesignConfig
+      // Additionale Borders unterstützen
+      additionalBorders: templateObj.baseStyle.additionalBorders,
 
       // Spezielle Zeilen-Stile
       headingRowStyle: this.convertCellStyle(templateObj.headerRow),
@@ -109,8 +155,6 @@ export class TableTemplateManager {
       lastColumnStyle: this.convertCellStyle(templateObj.lastColumn),
       firstRowStyle: this.convertCellStyle(templateObj.firstRow),
       lastRowStyle: this.convertCellStyle(templateObj.lastRow),
-      // footerRow property doesn't map to DesignConfig, either add it to DesignConfig interface
-      // or use it in a different way
 
       // Zebrierung
       evenRowStyle: this.convertCellStyle(templateObj.evenRows),
@@ -141,26 +185,22 @@ export class TableTemplateManager {
           }
         : undefined,
 
-      tfootStyle: templateObj.sections?.tfoot
-        ? {
-            backgroundColor: templateObj.sections.tfoot.backgroundColor,
-            borderTop: templateObj.sections.tfoot.borderTop,
-            borderBottom: templateObj.sections.tfoot.borderBottom,
-            defaultCellStyle: templateObj.sections.tfoot.defaultCellStyle,
-          }
-        : undefined,
+      tfootStyle:
+        templateObj.sections?.tfoot || templateObj.footerRow
+          ? {
+              backgroundColor: templateObj.sections?.tfoot?.backgroundColor,
+              borderTop: templateObj.sections?.tfoot?.borderTop,
+              borderBottom: templateObj.sections?.tfoot?.borderBottom,
+              defaultCellStyle:
+                templateObj.footerRow || templateObj.sections?.tfoot?.defaultCellStyle,
+            }
+          : undefined,
+
       // Erweiterte Optionen
       dynamicRowHeight: templateObj.advanced?.dynamicRowHeight,
       wordWrap: templateObj.advanced?.wordWrap,
-      // verticalAlignment is already defined above, using the advanced value if available
-      verticalAlignment:
-        templateObj.advanced?.verticalAlignment || templateObj.baseStyle.verticalAlignment,
-      // alignment is already defined above, using the advanced horizontalAlignment if available
-      // alignment: templateObj.advanced?.horizontalAlignment || templateObj.baseStyle.alignment,
 
       // Erweiterte Formatierungsoptionen
-      // textDecoration is already defined above
-      textTransform: templateObj.advanced?.textTransform || templateObj.baseStyle.textTransform,
       textOverflow: templateObj.advanced?.textOverflow || templateObj.baseStyle.textOverflow,
       whiteSpace: templateObj.advanced?.whiteSpace || templateObj.baseStyle.whiteSpace,
       boxShadow: templateObj.advanced?.boxShadow,
@@ -212,8 +252,14 @@ export class TableTemplateManager {
 
   /**
    * Gibt alle verfügbaren Templates zurück
+   * @param includeBuiltIn Wenn true, werden auch vordefinierte Templates zurückgegeben
    */
-  getAllTemplates(): TableTemplate[] {
+  getAllTemplates(includeBuiltIn = false): TableTemplate[] {
+    // Wenn includeBuiltIn false ist, filtere die vordefinierten Templates heraus
+    if (!includeBuiltIn) {
+      const predefinedNames = predefinedTemplates.map((t) => t.name);
+      return Array.from(this.templates.values()).filter((t) => !predefinedNames.includes(t.name));
+    }
     return Array.from(this.templates.values());
   }
 }

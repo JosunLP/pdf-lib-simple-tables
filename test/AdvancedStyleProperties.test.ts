@@ -111,4 +111,25 @@ describe('TableStyleManager - Advanced Properties', () => {
     expect(effectiveStyle.fontColor).toEqual({ r: 255, g: 0, b: 0 });
     expect(effectiveStyle.backgroundColor).toEqual({ r: 255, g: 255, b: 255 });
   });
+
+  test('should handle numeric font weights', () => {
+    const designConfig: DesignConfig = {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 12,
+      fontColor: { r: 0, g: 0, b: 0 },
+      backgroundColor: { r: 255, g: 255, b: 255 },
+    };
+
+    const styleManager = new TableStyleManager(designConfig);
+
+    // Numerischer fontWeight-Wert
+    const userStyle: TableCellStyle = {
+      fontWeight: 500,
+    };
+
+    const effectiveStyle = styleManager.getEffectiveCellStyle(1, 1, userStyle);
+
+    // Überprüfe, ob der numerische Wert korrekt übernommen wurde
+    expect(effectiveStyle.fontWeight).toBe(500);
+  });
 });

@@ -109,4 +109,32 @@ describe('TableTemplateManager', () => {
     expect(allTemplates).toContain(template1);
     expect(allTemplates).toContain(template2);
   });
+
+  test('should correctly apply firstColumn style from template', () => {
+    const templateManager = new TableTemplateManager();
+
+    const template: TableTemplate = {
+      name: 'ColumnStyleTemplate',
+      baseStyle: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontColor: { r: 0, g: 0, b: 0 },
+        backgroundColor: { r: 255, g: 255, b: 255 },
+      },
+      firstColumn: {
+        fontWeight: 'bold',
+        fontSize: 14,
+        backgroundColor: { r: 240, g: 240, b: 240 },
+      },
+    };
+
+    templateManager.addTemplate(template);
+    const designConfig = templateManager.convertTemplateToDesignConfig('ColumnStyleTemplate');
+
+    // Prüfe, ob firstColumnStyle korrekt aus dem Template übernommen wurde
+    expect(designConfig.firstColumnStyle).toBeDefined();
+    expect(designConfig.firstColumnStyle?.fontWeight).toBe('bold');
+    expect(designConfig.firstColumnStyle?.fontSize).toBe(14);
+    expect(designConfig.firstColumnStyle?.backgroundColor).toEqual({ r: 240, g: 240, b: 240 });
+  });
 });

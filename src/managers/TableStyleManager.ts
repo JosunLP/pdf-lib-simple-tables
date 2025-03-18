@@ -16,8 +16,19 @@ export class TableStyleManager {
   /**
    * Ermittelt den effektiven Stil für eine Zelle
    * indem Designkonfiguration und Benutzerstil kombiniert werden
+   * @param row Zeilenindex
+   * @param col Spaltenindex
+   * @param userStyle Benutzerdefinierter Stil
+   * @param totalRows Gesamtzahl der Zeilen (optional, für die letzte Zeile)
+   * @param totalCols Gesamtzahl der Spalten (optional, für die letzte Spalte)
    */
-  getEffectiveCellStyle(row: number, col: number, userStyle: TableCellStyle): TableCellStyle {
+  getEffectiveCellStyle(
+    row: number,
+    col: number,
+    userStyle: TableCellStyle,
+    totalRows?: number,
+    totalCols?: number,
+  ): TableCellStyle {
     // Basis-Stil aus der Design-Konfiguration
     const baseStyle: TableCellStyle = {
       // Grundlegende Stileigenschaften
@@ -69,37 +80,41 @@ export class TableStyleManager {
 
     // Spezial-Formatierung basierend auf der Position in der Tabelle
 
-    // Header-Zeile
-    if (row === 0 && this.designConfig.headingRowStyle) {
-      this.applyConfigToStyle(baseStyle, this.designConfig.headingRowStyle);
+    // Header-Zeile (headingRowStyle und firstRowStyle können beide angewendet werden)
+    if (row === 0) {
+      if (this.designConfig.headingRowStyle) {
+        this.applyConfigToStyle(baseStyle, this.designConfig.headingRowStyle);
+      }
+      if (this.designConfig.firstRowStyle) {
+        this.applyStyleToStyle(baseStyle, this.designConfig.firstRowStyle);
+      }
     }
 
-    // Header-Spalte
-    if (col === 0 && this.designConfig.headingColumnStyle) {
-      this.applyConfigToStyle(baseStyle, this.designConfig.headingColumnStyle);
+    // Header-Spalte - Korrigierte Implementierung
+    if (col === 0) {
+      if (this.designConfig.headingColumnStyle) {
+        this.applyConfigToStyle(baseStyle, this.designConfig.headingColumnStyle);
+      }
+      if (this.designConfig.firstColumnStyle) {
+        this.applyStyleToStyle(baseStyle, this.designConfig.firstColumnStyle);
+      }
     }
 
-    // Erste Zeile
-    if (row === 0 && this.designConfig.firstRowStyle) {
-      Object.assign(baseStyle, this.designConfig.firstRowStyle);
+    // Letzte Zeile - Wenn totalRows bekannt ist
+    if (totalRows !== undefined && row === totalRows - 1 && this.designConfig.lastRowStyle) {
+      this.applyStyleToStyle(baseStyle, this.designConfig.lastRowStyle);
     }
 
-    // Letzte Zeile
-    // (Hier müsste die Zeilenanzahl bekannt sein, daher sollte ein zusätzlicher Parameter eingeführt werden)
-
-    // Erste Spalte
-    if (col === 0 && this.designConfig.firstColumnStyle) {
-      Object.assign(baseStyle, this.designConfig.firstColumnStyle);
+    // Letzte Spalte - Wenn totalCols bekannt ist
+    if (totalCols !== undefined && col === totalCols - 1 && this.designConfig.lastColumnStyle) {
+      this.applyStyleToStyle(baseStyle, this.designConfig.lastColumnStyle);
     }
 
-    // Letzte Spalte
-    // (Hier müsste die Spaltenanzahl bekannt sein, daher sollte ein zusätzlicher Parameter eingeführt werden)
-
-    // Ungerade/Gerade Zeilen
+    // Ungerade/Gerade Zeilen (werden überschrieben, wenn spezifischere Stile angewendet werden)
     if (this.designConfig.oddRowStyle && row % 2 !== 0) {
-      Object.assign(baseStyle, this.designConfig.oddRowStyle);
+      this.applyStyleToStyle(baseStyle, this.designConfig.oddRowStyle);
     } else if (this.designConfig.evenRowStyle && row % 2 === 0) {
-      Object.assign(baseStyle, this.designConfig.evenRowStyle);
+      this.applyStyleToStyle(baseStyle, this.designConfig.evenRowStyle);
     }
 
     // Spezielle Zellen über Selektor
@@ -111,23 +126,35 @@ export class TableStyleManager {
           specialCell.coordinates.row === row &&
           specialCell.coordinates.col === col
         ) {
-          Object.assign(baseStyle, specialCell.style);
+          this.applyStyleToStyle(baseStyle, specialCell.style);
         } else if (specialCell.selector === 'first-row' && row === 0) {
-          Object.assign(baseStyle, specialCell.style);
+          this.applyStyleToStyle(baseStyle, specialCell.style);
         } else if (specialCell.selector === 'first-column' && col === 0) {
-          Object.assign(baseStyle, specialCell.style);
+          this.applyStyleToStyle(baseStyle, specialCell.style);
         } else if (
           specialCell.selector === 'nth-row' &&
           specialCell.index !== undefined &&
           row === specialCell.index
         ) {
-          Object.assign(baseStyle, specialCell.style);
+          this.applyStyleToStyle(baseStyle, specialCell.style);
         } else if (
           specialCell.selector === 'nth-column' &&
           specialCell.index !== undefined &&
           col === specialCell.index
         ) {
-          Object.assign(baseStyle, specialCell.style);
+          this.applyStyleToStyle(baseStyle, specialCell.style);
+        } else if (
+          specialCell.selector === 'last-row' &&
+          totalRows !== undefined &&
+          row === totalRows - 1
+        ) {
+          this.applyStyleToStyle(baseStyle, specialCell.style);
+        } else if (
+          specialCell.selector === 'last-column' &&
+          totalCols !== undefined &&
+          col === totalCols - 1
+        ) {
+          this.applyStyleToStyle(baseStyle, specialCell.style);
         }
       }
     }
@@ -147,7 +174,19 @@ export class TableStyleManager {
     if (config.borderColor !== undefined) style.borderColor = config.borderColor;
     if (config.borderWidth !== undefined) style.borderWidth = config.borderWidth;
     if (config.fontFamily !== undefined) style.fontFamily = config.fontFamily;
-    if (config.fontWeight !== undefined) style.fontWeight = config.fontWeight;
+
+    // Verbesserte Behandlung für fontWeight, um auch numerische Werte zu unterstützen
+    if (config.fontWeight !== undefined) {
+      // Überprüfe ob der Wert ein gültiger fontWeight-Wert ist
+      const validValues = ['normal', 'bold', 'lighter'];
+      if (
+        typeof config.fontWeight === 'number' ||
+        validValues.includes(config.fontWeight as string)
+      ) {
+        style.fontWeight = config.fontWeight;
+      }
+    }
+
     if (config.fontStyle !== undefined) style.fontStyle = config.fontStyle;
     if (config.alignment !== undefined) style.alignment = config.alignment;
     if (config.padding !== undefined) style.padding = config.padding;
@@ -189,6 +228,15 @@ export class TableStyleManager {
 
     // Zusätzliche Eigenschaften für interne Rahmen
     if (config.additionalBorders !== undefined) style.additionalBorders = config.additionalBorders;
+  }
+
+  /**
+   * Hilfsmethode zum Anwenden eines TableCellStyle auf einen anderen
+   * Sicherstellen, dass wir konsistent Object.assign verwenden für TableCellStyle-Objekte
+   */
+  private applyStyleToStyle(targetStyle: TableCellStyle, sourceStyle: TableCellStyle): void {
+    if (!sourceStyle) return;
+    Object.assign(targetStyle, sourceStyle);
   }
 
   /**

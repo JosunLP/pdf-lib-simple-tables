@@ -30,6 +30,10 @@ export const modernBusinessTemplate: TableTemplate = {
     backgroundColor: { r: 250, g: 250, b: 250 },
   },
 
+  firstColumn: {
+    fontWeight: 'bold',
+  },
+
   evenRows: {
     backgroundColor: { r: 255, g: 255, b: 255 },
   },

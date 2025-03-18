@@ -27,11 +27,17 @@ export class FontManager {
   }
 
   private base64ToUint8Array(base64: string): Uint8Array {
+    // Verbesserte Implementierung die in allen Umgebungen funktioniert
+
+    // Entferne mögliche Base64 Präfixe wie "data:font/ttf;base64,"
+    const cleanedBase64 = base64.replace(/^data:[^;]+;base64,/, '');
+
     // Wenn Buffer vorhanden ist (Node-Umgebung), diesen verwenden
     if (typeof Buffer !== 'undefined') {
-      return Uint8Array.from(Buffer.from(base64, 'base64'));
+      return Uint8Array.from(Buffer.from(cleanedBase64, 'base64'));
     } else {
-      const binaryString = atob(base64);
+      // Browser-Umgebung
+      const binaryString = atob(cleanedBase64);
       const len = binaryString.length;
       const bytes = new Uint8Array(len);
       for (let i = 0; i < len; i++) {
