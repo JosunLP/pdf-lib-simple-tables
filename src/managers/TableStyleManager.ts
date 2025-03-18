@@ -148,7 +148,19 @@ export class TableStyleManager {
     if (config.borderColor !== undefined) style.borderColor = config.borderColor;
     if (config.borderWidth !== undefined) style.borderWidth = config.borderWidth;
     if (config.fontFamily !== undefined) style.fontFamily = config.fontFamily;
-    if (config.fontWeight !== undefined) style.fontWeight = config.fontWeight;
+
+    // Verbesserte Behandlung für fontWeight, um auch numerische Werte zu unterstützen
+    if (config.fontWeight !== undefined) {
+      // Überprüfe ob der Wert ein gültiger fontWeight-Wert ist
+      const validValues = ['normal', 'bold', 'lighter'];
+      if (
+        typeof config.fontWeight === 'number' ||
+        validValues.includes(config.fontWeight as string)
+      ) {
+        style.fontWeight = config.fontWeight;
+      }
+    }
+
     if (config.fontStyle !== undefined) style.fontStyle = config.fontStyle;
     if (config.alignment !== undefined) style.alignment = config.alignment;
     if (config.padding !== undefined) style.padding = config.padding;
