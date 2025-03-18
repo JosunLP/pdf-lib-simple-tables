@@ -42,10 +42,6 @@ export class TableTemplateManager {
   }
 
   /**
-   * Konvertiert ein Template in ein DesignConfig-Objekt
-   * @param template TableTemplate oder Template-Name
-   */
-  /**
    * Konvertiert TableCellStyle zu Partial<DesignConfig>
    * und stellt Typkompatibilität sicher
    */
@@ -63,6 +59,10 @@ export class TableTemplateManager {
     return result as Partial<DesignConfig>;
   }
 
+  /**
+   * Konvertiert ein Template in ein DesignConfig-Objekt
+   * @param template TableTemplate oder Template-Name
+   */
   convertTemplateToDesignConfig(template: TableTemplate | string): DesignConfig {
     let templateObj: TableTemplate | undefined;
 
@@ -86,34 +86,94 @@ export class TableTemplateManager {
       borderWidth: templateObj.baseStyle.borderWidth,
       padding: templateObj.baseStyle.padding,
 
+      // Weitere Basis-Eigenschaften aus baseStyle übernehmen
+      fontWeight: templateObj.baseStyle.fontWeight,
+      fontStyle: templateObj.baseStyle.fontStyle,
+      alignment: templateObj.baseStyle.alignment,
+      // This verticalAlignment will be potentially overridden by advanced settings below
+      borderRadius:
+        typeof templateObj.baseStyle.borderRadius === 'number'
+          ? templateObj.baseStyle.borderRadius.toString()
+          : templateObj.baseStyle.borderRadius,
+      textDecoration: templateObj.baseStyle.textDecoration,
+      // textTransform is set in the advanced settings section below
+      // Base vertical alignment - will be overridden below if advanced settings exist
+
+      // Rahmen-Eigenschaften übernehmen
+      // Border properties will be set later using templateObj.borders
+      // additionalBorders property is not used in DesignConfig
+
       // Spezielle Zeilen-Stile
       headingRowStyle: this.convertCellStyle(templateObj.headerRow),
       firstColumnStyle: this.convertCellStyle(templateObj.firstColumn),
       lastColumnStyle: this.convertCellStyle(templateObj.lastColumn),
+      firstRowStyle: this.convertCellStyle(templateObj.firstRow),
+      lastRowStyle: this.convertCellStyle(templateObj.lastRow),
+      // footerRow property doesn't map to DesignConfig, either add it to DesignConfig interface
+      // or use it in a different way
 
       // Zebrierung
       evenRowStyle: this.convertCellStyle(templateObj.evenRows),
       oddRowStyle: this.convertCellStyle(templateObj.oddRows),
 
       // Rahmen-Stile
-      defaultTopBorder: templateObj.borders?.top,
+      defaultTopBorder: templateObj.borders?.top || templateObj.borders?.headerTop,
       defaultRightBorder: templateObj.borders?.right,
-      defaultBottomBorder: templateObj.borders?.bottom,
+      defaultBottomBorder: templateObj.borders?.bottom || templateObj.borders?.headerBottom,
       defaultLeftBorder: templateObj.borders?.left,
 
+      // Sektionen
+      theadStyle: templateObj.sections?.thead
+        ? {
+            backgroundColor: templateObj.sections.thead.backgroundColor,
+            borderTop: templateObj.sections.thead.borderTop,
+            borderBottom: templateObj.sections.thead.borderBottom,
+            defaultCellStyle: templateObj.sections.thead.defaultCellStyle,
+          }
+        : undefined,
+
+      tbodyStyle: templateObj.sections?.tbody
+        ? {
+            backgroundColor: templateObj.sections.tbody.backgroundColor,
+            borderTop: templateObj.sections.tbody.borderTop,
+            borderBottom: templateObj.sections.tbody.borderBottom,
+            defaultCellStyle: templateObj.sections.tbody.defaultCellStyle,
+          }
+        : undefined,
+
+      tfootStyle: templateObj.sections?.tfoot
+        ? {
+            backgroundColor: templateObj.sections.tfoot.backgroundColor,
+            borderTop: templateObj.sections.tfoot.borderTop,
+            borderBottom: templateObj.sections.tfoot.borderBottom,
+            defaultCellStyle: templateObj.sections.tfoot.defaultCellStyle,
+          }
+        : undefined,
       // Erweiterte Optionen
       dynamicRowHeight: templateObj.advanced?.dynamicRowHeight,
       wordWrap: templateObj.advanced?.wordWrap,
-      verticalAlignment: templateObj.advanced?.verticalAlignment,
-      alignment: templateObj.advanced?.horizontalAlignment,
+      // verticalAlignment is already defined above, using the advanced value if available
+      verticalAlignment:
+        templateObj.advanced?.verticalAlignment || templateObj.baseStyle.verticalAlignment,
+      // alignment is already defined above, using the advanced horizontalAlignment if available
+      // alignment: templateObj.advanced?.horizontalAlignment || templateObj.baseStyle.alignment,
 
       // Erweiterte Formatierungsoptionen
-      textDecoration: templateObj.advanced?.textDecoration,
-      textTransform: templateObj.advanced?.textTransform,
-      textOverflow: templateObj.advanced?.textOverflow,
-      whiteSpace: templateObj.advanced?.whiteSpace,
+      // textDecoration is already defined above
+      textTransform: templateObj.advanced?.textTransform || templateObj.baseStyle.textTransform,
+      textOverflow: templateObj.advanced?.textOverflow || templateObj.baseStyle.textOverflow,
+      whiteSpace: templateObj.advanced?.whiteSpace || templateObj.baseStyle.whiteSpace,
       boxShadow: templateObj.advanced?.boxShadow,
       opacity: templateObj.advanced?.opacity,
+
+      // Visuelle Effekte
+      backgroundGradient: templateObj.baseStyle.backgroundGradient,
+      hoverRowHighlight: templateObj.advanced?.hoverRowHighlight,
+      borderCollapse: templateObj.advanced?.borderCollapse || 'collapse',
+
+      // Spezielle Layout-Eigenschaften
+      columnSpan: templateObj.advanced?.columnSpan,
+      rowSpan: templateObj.advanced?.rowSpan,
     };
 
     // Spezielle Zellen-Stile konvertieren
@@ -127,6 +187,10 @@ export class TableTemplateManager {
               ? 'nth-row'
               : cell.selector === 'column'
               ? 'nth-column'
+              : cell.selector === 'pattern'
+              ? cell.pattern === 'total'
+                ? 'last-row'
+                : 'first-row'
               : 'first-row',
           index:
             cell.selector === 'row'

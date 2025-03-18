@@ -11,55 +11,71 @@ export interface TableTemplate {
   version?: string;
   author?: string;
 
-  // Basis-Eigenschaften
-  baseStyle: {
-    fontFamily?: string;
-    fontSize?: number;
-    fontColor?: { r: number; g: number; b: number };
-    backgroundColor?: { r: number; g: number; b: number };
-    borderColor?: { r: number; g: number; b: number };
-    borderWidth?: number;
-    padding?: string | number;
-  };
+  // Basis-Stil, wird auf alle Zellen angewendet
+  baseStyle: TableCellStyle;
 
-  // Spezialisierte Styling-Regeln für verschiedene Tabellenteile
+  // Spezifische Zeilen- und Spalten-Stile
   headerRow?: TableCellStyle;
-  footerRow?: TableCellStyle;
+  firstRow?: TableCellStyle;
+  lastRow?: TableCellStyle;
   firstColumn?: TableCellStyle;
   lastColumn?: TableCellStyle;
+  footerRow?: TableCellStyle; // Added property for footer row styling
 
-  // Zeilen-Styling (gerade/ungerade für Zebra-Effekt)
+  // Zebrierung (für abwechselnde Zeilenfarben)
   evenRows?: TableCellStyle;
   oddRows?: TableCellStyle;
 
-  // Rahmen-Stile
+  // Rahmen-Definitionen
   borders?: {
     top?: BorderStyle;
     right?: BorderStyle;
     bottom?: BorderStyle;
     left?: BorderStyle;
-    internal?: BorderStyle;
+    headerTop?: BorderStyle;
     headerBottom?: BorderStyle;
     footerTop?: BorderStyle;
   };
 
-  // Erweiterte Optionen
+  // Abschnitts-Stile
+  sections?: {
+    thead?: {
+      backgroundColor?: { r: number; g: number; b: number };
+      borderTop?: BorderStyle;
+      borderBottom?: BorderStyle;
+      defaultCellStyle?: TableCellStyle;
+    };
+    tbody?: {
+      backgroundColor?: { r: number; g: number; b: number };
+      borderTop?: BorderStyle;
+      borderBottom?: BorderStyle;
+      defaultCellStyle?: TableCellStyle;
+    };
+    tfoot?: {
+      backgroundColor?: { r: number; g: number; b: number };
+      borderTop?: BorderStyle;
+      borderBottom?: BorderStyle;
+      defaultCellStyle?: TableCellStyle;
+    };
+  };
+
+  // Erweiterte Konfiguration
   advanced?: {
     dynamicRowHeight?: boolean;
     wordWrap?: 'normal' | 'break-word' | 'none';
     verticalAlignment?: 'top' | 'middle' | 'bottom';
     horizontalAlignment?: 'left' | 'center' | 'right';
     alternateRowColoring?: boolean;
-
-    // Erweiterte Textformatierung hinzugefügt
     textDecoration?: 'none' | 'underline' | 'line-through';
     textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
     textOverflow?: 'clip' | 'ellipsis';
     whiteSpace?: 'normal' | 'nowrap' | 'pre';
-
-    // Visuelle Effekte
     boxShadow?: string;
     opacity?: number;
+    borderCollapse?: 'separate' | 'collapse';
+    hoverRowHighlight?: { r: number; g: number; b: number };
+    columnSpan?: number;
+    rowSpan?: number;
   };
 
   // Spezialisierte Designs für bestimmte Zellen (per Position oder Regel)
