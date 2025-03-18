@@ -57,15 +57,15 @@ new PdfTable(options: TableOptions)
 
 ```typescript
 interface TableOptions {
-  columns: number;             // Number of columns
-  rows: number;                // Number of rows
-  rowHeight?: number;          // Height of each row (default: 30)
-  colWidth?: number;           // Width of each column (default: 100)
+  columns: number; // Number of columns
+  rows: number; // Number of rows
+  rowHeight?: number; // Height of each row (default: 30)
+  colWidth?: number; // Width of each column (default: 100)
   designConfig?: DesignConfig; // Design configuration
-  tableWidth?: number;         // Total table width
-  tableHeight?: number;        // Total table height
-  repeatHeaderRows?: number;   // Number of header rows to repeat on new pages
-  headerRepetition?: boolean;  // Whether to repeat headers
+  tableWidth?: number; // Total table width
+  tableHeight?: number; // Total table height
+  repeatHeaderRows?: number; // Number of header rows to repeat on new pages
+  headerRepetition?: boolean; // Whether to repeat headers
   pageBreakThreshold?: number; // When to break to a new page
 }
 ```
@@ -179,7 +179,7 @@ interface TableCellStyle {
   backgroundColor?: { r: number; g: number; b: number };
   borderColor?: { r: number; g: number; b: number };
   borderWidth?: number;
-  
+
   // Text formatting
   fontFamily?: string;
   fontWeight?: 'normal' | 'bold' | 'lighter' | number;
@@ -190,27 +190,27 @@ interface TableCellStyle {
   textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
   textOverflow?: 'clip' | 'ellipsis';
   whiteSpace?: 'normal' | 'nowrap' | 'pre';
-  
+
   // Border control
   topBorder?: BorderStyle;
   rightBorder?: BorderStyle;
   bottomBorder?: BorderStyle;
   leftBorder?: BorderStyle;
   additionalBorders?: AdditionalBorder[];
-  
+
   // Layout
   padding?: string | number;
   wordWrap?: 'normal' | 'break-word' | 'none';
-  
+
   // Advanced
   borderRadius?: string | number;
   boxShadow?: string;
   opacity?: number;
-  
+
   // Cell spanning
   columnSpan?: number;
   rowSpan?: number;
-  
+
   // Effects
   backgroundGradient?: {
     type: 'linear' | 'radial';
@@ -218,7 +218,7 @@ interface TableCellStyle {
     angle?: number;
     center?: { x: number; y: number };
   };
-  
+
   // Interaction states
   hoverStyle?: TableCellStyle;
   printStyle?: TableCellStyle;
@@ -354,14 +354,14 @@ table.setCellStyle(1, 1, {
 The library includes several predefined design configurations:
 
 ```typescript
-import { 
+import {
   materialDesignConfig,
   classicDesignConfig,
   modernDesignConfig,
   highContrastDesignConfig,
   financialTableDesign,
   dataTableDesign,
-  darkModeTableDesign
+  darkModeTableDesign,
 } from 'pdf-lib-simple-tables';
 
 const table = new PdfTable({
@@ -429,7 +429,11 @@ const table = new PdfTable({
 });
 
 // Add long content that will automatically expand the row height
-table.setCell(1, 1, 'This is a very long text that will wrap to multiple lines, causing the row to expand in height to accommodate all the content.');
+table.setCell(
+  1,
+  1,
+  'This is a very long text that will wrap to multiple lines, causing the row to expand in height to accommodate all the content.',
+);
 ```
 
 ### PDF Embedding
@@ -443,15 +447,15 @@ import { PdfTable } from 'pdf-lib-simple-tables';
 async function embedTable() {
   // Load existing PDF
   const existingPdf = await PDFDocument.load(existingPdfBytes);
-  
+
   // Create table
   const table = new PdfTable({ columns: 4, rows: 4 });
   table.setCell(0, 0, 'Header 1');
   // ...more cell assignments...
-  
+
   // Embed at specific coordinates
   await table.embedInPDF(existingPdf, { x: 50, y: 300 });
-  
+
   // Save updated PDF
   const updatedPdfBytes = await existingPdf.save();
 }
@@ -467,13 +471,13 @@ async function embedTableImage() {
 
   // Assume imageBytes contains the PNG image of the table
   const imageBytes = await generateTableImageBytes(table); // Your implementation
-  await table.embedTableAsImage(existingPdf, imageBytes, { 
-    x: 50, 
-    y: 300, 
-    width: 320, 
-    height: 80 
+  await table.embedTableAsImage(existingPdf, imageBytes, {
+    x: 50,
+    y: 300,
+    width: 320,
+    height: 80,
   });
-  
+
   const updatedPdfBytes = await existingPdf.save();
 }
 ```
@@ -538,23 +542,23 @@ interface DesignConfig {
   backgroundColor?: { r: number; g: number; b: number };
   borderColor?: { r: number; g: number; b: number };
   borderWidth?: number;
-  
+
   // Border properties
   borderTop?: BorderStyle;
   borderRight?: BorderStyle;
   borderBottom?: BorderStyle;
   borderLeft?: BorderStyle;
-  
+
   // Header styles
   headingRowStyle?: Partial<DesignConfig>;
   headingColumnStyle?: Partial<DesignConfig>;
-  
+
   // Default border styles
   defaultTopBorder?: BorderStyle;
   defaultRightBorder?: BorderStyle;
   defaultBottomBorder?: BorderStyle;
   defaultLeftBorder?: BorderStyle;
-  
+
   // Additional styling
   additionalBorders?: AdditionalBorder[];
   padding?: string | number;
@@ -564,7 +568,7 @@ interface DesignConfig {
   verticalAlignment?: 'top' | 'middle' | 'bottom';
   borderRadius?: string | number;
   wordWrap?: 'normal' | 'break-word' | 'none';
-  
+
   // Special row/column styling
   evenRowStyle?: TableCellStyle;
   oddRowStyle?: TableCellStyle;
@@ -572,18 +576,18 @@ interface DesignConfig {
   lastRowStyle?: TableCellStyle;
   firstColumnStyle?: TableCellStyle;
   lastColumnStyle?: TableCellStyle;
-  
+
   // Section styling
   theadStyle?: SectionStyle;
   tbodyStyle?: SectionStyle;
   tfootStyle?: SectionStyle;
-  
+
   // Table borders
   tableBorder?: BorderStyle;
-  
+
   // Special cell styling
   specialCells?: CellSelector[];
-  
+
   // Misc styling options
   dynamicRowHeight?: boolean;
   textDecoration?: 'none' | 'underline' | 'line-through';
@@ -617,7 +621,7 @@ interface TableTemplate {
   description?: string;
   version?: string;
   author?: string;
-  
+
   baseStyle: {
     fontFamily?: string;
     fontSize?: number;
@@ -627,14 +631,14 @@ interface TableTemplate {
     padding?: string | number;
     // ... and other style properties
   };
-  
+
   headerRow?: TableCellStyle;
   footerRow?: TableCellStyle;
   firstColumn?: TableCellStyle;
   lastColumn?: TableCellStyle;
   evenRows?: TableCellStyle;
   oddRows?: TableCellStyle;
-  
+
   borders?: {
     headerBottom?: BorderStyle;
     footerTop?: BorderStyle;
@@ -643,14 +647,14 @@ interface TableTemplate {
     bottom?: BorderStyle;
     left?: BorderStyle;
   };
-  
+
   specialCells?: {
     selector: string;
     pattern?: string;
     coordinates?: { row: number; col: number };
     style: TableCellStyle;
   }[];
-  
+
   advanced?: {
     dynamicRowHeight?: boolean;
     wordWrap?: 'normal' | 'break-word' | 'none';
@@ -680,7 +684,15 @@ For targeting specific cells:
 
 ```typescript
 interface CellSelector {
-  selector: 'coordinates' | 'first-row' | 'first-column' | 'nth-row' | 'nth-column' | 'last-row' | 'last-column' | 'pattern';
+  selector:
+    | 'coordinates'
+    | 'first-row'
+    | 'first-column'
+    | 'nth-row'
+    | 'nth-column'
+    | 'last-row'
+    | 'last-column'
+    | 'pattern';
   coordinates?: { row: number; col: number };
   index?: number;
   pattern?: string | RegExp;
@@ -696,23 +708,23 @@ The library supports both Node.js and browser environments. For browsers, use th
 <script src="path/to/pdf-lib-simple-tables/build/index.browser.js"></script>
 <script>
   const { PdfTable, modernDesignConfig } = PdfLibSimpleTables;
-  
+
   async function createTable() {
     const table = new PdfTable({
       columns: 3,
       rows: 5,
-      designConfig: modernDesignConfig
+      designConfig: modernDesignConfig,
     });
-    
+
     // ...configure table...
-    
+
     const pdfDoc = await table.toPDF();
     const pdfBytes = await pdfDoc.save();
-    
+
     // Download or display the PDF
-    download(pdfBytes, "table.pdf", "application/pdf");
+    download(pdfBytes, 'table.pdf', 'application/pdf');
   }
-  
+
   // Helper function to download the PDF
   function download(data, filename, type) {
     const blob = new Blob([data], { type: type });
