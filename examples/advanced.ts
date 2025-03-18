@@ -26,8 +26,11 @@ async function createAdvancedTable(): Promise<void> {
     }
   }
 
-  const customFont = new CustomFont('MyFont', 'VALID_BASE64_ENCODED_FONT_DATA');
-  table.setCustomFont(customFont);
+  const name = 'TestFont';
+  const base64 = 'dGVzdGJhc2U2NA==';
+  const extension = 'ttf';
+  const font = new CustomFont(name, base64, extension);
+  table.setCustomFont(font);
 
   const pdfDoc = await table.toPDF();
   const pdfBytes = await pdfDoc.save();
