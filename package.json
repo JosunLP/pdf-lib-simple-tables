@@ -1,6 +1,6 @@
 {
   "name": "pdf-lib-simple-tables",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "TS library for creating tables based on pdf-lib",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
