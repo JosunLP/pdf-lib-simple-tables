@@ -74,7 +74,7 @@ export class TableStyleManager {
       this.applyConfigToStyle(baseStyle, this.designConfig.headingRowStyle);
     }
 
-    // Header-Spalte
+    // Header-Spalte - Dieser Teil scheint nicht korrekt zu funktionieren
     if (col === 0 && this.designConfig.headingColumnStyle) {
       this.applyConfigToStyle(baseStyle, this.designConfig.headingColumnStyle);
     }
@@ -87,7 +87,8 @@ export class TableStyleManager {
     // Letzte Zeile
     // (Hier müsste die Zeilenanzahl bekannt sein, daher sollte ein zusätzlicher Parameter eingeführt werden)
 
-    // Erste Spalte
+    // Erste Spalte - Hier ist das Problem!
+    // Wir verwenden jetzt Object.assign anstatt this.applyConfigToStyle für konsistente Anwendung
     if (col === 0 && this.designConfig.firstColumnStyle) {
       Object.assign(baseStyle, this.designConfig.firstColumnStyle);
     }

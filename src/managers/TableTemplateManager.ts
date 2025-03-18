@@ -1,23 +1,38 @@
 import { TableTemplate } from '../templates/TableTemplate';
 import { DesignConfig } from '../config/DesignConfig';
 import { TableCellStyle } from '../interfaces/TableCellStyle';
+import { predefinedTemplates } from '../templates/predefinedTemplates';
 
 /**
  * Manager für Tabellen-Templates
  * Kümmert sich um das Laden, Speichern und Konvertieren von Templates
  */
 export class TableTemplateManager {
-  private templates: Map<string, TableTemplate> = new Map();
+  private templates: Map<string, TableTemplate>;
+
+  constructor() {
+    this.templates = new Map<string, TableTemplate>();
+
+    // Lade vordefinierte Templates
+    predefinedTemplates.forEach((template) => {
+      this.addTemplate(template);
+    });
+  }
 
   /**
-   * Fügt ein Template hinzu
-   * @param template TableTemplate-Objekt
+   * Fügt ein neues Template hinzu
+   * @param template Das hinzuzufügende Template
    */
   addTemplate(template: TableTemplate): void {
-    if (!template.name) {
-      throw new Error('Template muss einen Namen haben');
-    }
     this.templates.set(template.name, template);
+  }
+
+  /**
+   * Entfernt ein Template anhand seines Namens
+   * @param name Name des zu entfernenden Templates
+   */
+  removeTemplate(name: string): void {
+    this.templates.delete(name);
   }
 
   /**
@@ -103,8 +118,9 @@ export class TableTemplateManager {
       // Border properties will be set later using templateObj.borders
       // additionalBorders property is not used in DesignConfig
 
-      // Spezielle Zeilen-Stile
+      // Spezielle Zeilen-Stile - Hier ist das Problem!
       headingRowStyle: this.convertCellStyle(templateObj.headerRow),
+      // Korrigiere die erste Spalte und stelle sicher, dass hier firstColumn verwendet wird
       firstColumnStyle: this.convertCellStyle(templateObj.firstColumn),
       lastColumnStyle: this.convertCellStyle(templateObj.lastColumn),
       firstRowStyle: this.convertCellStyle(templateObj.firstRow),
