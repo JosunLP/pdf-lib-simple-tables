@@ -8,6 +8,7 @@
   "browser": {
     "./build/index.cjs": "./build/index.browser.js"
   },
+  "homepage": "https://github.com/JosunLP/pdf-lib-simple-tables",
   "scripts": {
     "build": "vite build && tsc --emitDeclarationOnly",
     "build:browser": "vite build --format iife",
