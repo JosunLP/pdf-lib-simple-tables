@@ -27,7 +27,7 @@ export class TableStyleManager {
       borderColor: this.designConfig.borderColor,
       borderWidth: this.designConfig.borderWidth,
 
-      // Zusätzliche Eigenschaften, die bisher fehlten oder nicht vollständig angewendet wurden
+      // Basis-Eigenschaften für Text und Ausrichtung
       fontFamily: this.designConfig.fontFamily,
       fontWeight: this.designConfig.fontWeight,
       fontStyle: this.designConfig.fontStyle,
@@ -43,6 +43,28 @@ export class TableStyleManager {
       bottomBorder: this.designConfig.defaultBottomBorder || this.designConfig.borderBottom,
       leftBorder: this.designConfig.defaultLeftBorder || this.designConfig.borderLeft,
       additionalBorders: this.designConfig.additionalBorders,
+
+      // Erweiterte Textformatierung
+      textDecoration: this.designConfig.textDecoration,
+      textTransform: this.designConfig.textTransform,
+      textOverflow: this.designConfig.textOverflow,
+      whiteSpace: this.designConfig.whiteSpace,
+
+      // Visuelle Effekte
+      boxShadow: this.designConfig.boxShadow,
+      opacity: this.designConfig.opacity,
+
+      // Erweiterte Layout-Eigenschaften
+      columnSpan: this.designConfig.columnSpan,
+      rowSpan: this.designConfig.rowSpan,
+
+      // Hintergrund-Gradient
+      backgroundGradient: this.designConfig.backgroundGradient,
+
+      // Spezielle Stile
+      hoverStyle: this.designConfig.hoverStyle,
+      printStyle: this.designConfig.printStyle,
+      className: this.designConfig.className,
     };
 
     // Spezial-Formatierung basierend auf der Position in der Tabelle
@@ -118,6 +140,7 @@ export class TableStyleManager {
    * Hilfsmethode zum Anwenden von DesignConfig-Properties auf einen Stil
    */
   private applyConfigToStyle(style: TableCellStyle, config: Partial<DesignConfig>): void {
+    // Grundlegende Stileigenschaften
     if (config.fontSize !== undefined) style.fontSize = config.fontSize;
     if (config.fontColor !== undefined) style.fontColor = config.fontColor;
     if (config.backgroundColor !== undefined) style.backgroundColor = config.backgroundColor;
@@ -135,6 +158,37 @@ export class TableStyleManager {
     if (config.borderBottom !== undefined) style.bottomBorder = config.borderBottom;
     if (config.borderLeft !== undefined) style.leftBorder = config.borderLeft;
     if (config.wordWrap !== undefined) style.wordWrap = config.wordWrap;
+
+    // Erweiterte Textformatierung - type-sicher aufgeschrieben
+    if ('textDecoration' in config && config.textDecoration !== undefined)
+      style.textDecoration = config.textDecoration;
+    if ('textTransform' in config && config.textTransform !== undefined)
+      style.textTransform = config.textTransform;
+    if ('textOverflow' in config && config.textOverflow !== undefined)
+      style.textOverflow = config.textOverflow;
+    if ('whiteSpace' in config && config.whiteSpace !== undefined)
+      style.whiteSpace = config.whiteSpace;
+
+    // Visuelle Effekte
+    if ('boxShadow' in config && config.boxShadow !== undefined) style.boxShadow = config.boxShadow;
+    if ('opacity' in config && config.opacity !== undefined) style.opacity = config.opacity;
+
+    // Erweiterte Layout-Eigenschaften
+    if ('columnSpan' in config && config.columnSpan !== undefined)
+      style.columnSpan = config.columnSpan;
+    if ('rowSpan' in config && config.rowSpan !== undefined) style.rowSpan = config.rowSpan;
+
+    // Spezielle Stile und komplexe Eigenschaften
+    if ('backgroundGradient' in config && config.backgroundGradient !== undefined)
+      style.backgroundGradient = config.backgroundGradient;
+    if ('hoverStyle' in config && config.hoverStyle !== undefined)
+      style.hoverStyle = config.hoverStyle;
+    if ('printStyle' in config && config.printStyle !== undefined)
+      style.printStyle = config.printStyle;
+    if ('className' in config && config.className !== undefined) style.className = config.className;
+
+    // Zusätzliche Eigenschaften für interne Rahmen
+    if (config.additionalBorders !== undefined) style.additionalBorders = config.additionalBorders;
   }
 
   /**

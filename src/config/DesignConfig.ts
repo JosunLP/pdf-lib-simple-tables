@@ -44,6 +44,17 @@
  * @property {TableCellStyle} [lastColumnStyle] - Style for the last column
  * @property {'normal' | 'break-word' | 'none'} [wordWrap] - Text wrapping behavior
  * @property {boolean} [dynamicRowHeight] - Whether rows should grow to fit content
+ * @property {'none' | 'underline' | 'line-through'} [textDecoration] - Text decoration
+ * @property {'none' | 'capitalize' | 'uppercase' | 'lowercase'} [textTransform] - Text transform
+ * @property {'clip' | 'ellipsis'} [textOverflow] - Text overflow
+ * @property {'normal' | 'nowrap' | 'pre'} [whiteSpace] - White space
+ * @property {number} [opacity] - Opacity
+ * @property {number} [columnSpan] - Column span
+ * @property {number} [rowSpan] - Row span
+ * @property {{ type: 'linear' | 'radial'; colors: { position: number; color: { r: number; g: number; b: number } }[]; angle?: number; center?: { x: number; y: number } }} [backgroundGradient] - Background gradient
+ * @property {TableCellStyle} [hoverStyle] - Hover style
+ * @property {TableCellStyle} [printStyle] - Print style
+ * @property {string} [className] - CSS class name
  */
 export interface DesignConfig {
   fontFamily?: string;
@@ -114,6 +125,32 @@ export interface DesignConfig {
   // Neue Eigenschaften für Textumbruch und dynamische Zeilenhöhe
   wordWrap?: 'normal' | 'break-word' | 'none';
   dynamicRowHeight?: boolean;
+
+  // Textformatierungseigenschaften hinzugefügt
+  textDecoration?: 'none' | 'underline' | 'line-through';
+  textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+  textOverflow?: 'clip' | 'ellipsis';
+  whiteSpace?: 'normal' | 'nowrap' | 'pre';
+
+  // Visuelle Effekte
+  opacity?: number;
+
+  // Cell spanning Eigenschaften
+  columnSpan?: number;
+  rowSpan?: number;
+
+  // Komplexe Eigenschaften
+  backgroundGradient?: {
+    type: 'linear' | 'radial';
+    colors: { position: number; color: { r: number; g: number; b: number } }[];
+    angle?: number;
+    center?: { x: number; y: number };
+  };
+
+  // Spezielle Stile
+  hoverStyle?: TableCellStyle;
+  printStyle?: TableCellStyle;
+  className?: string;
 }
 
 // Import BorderStyle and AdditionalBorder definitions
