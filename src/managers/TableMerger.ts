@@ -62,8 +62,9 @@ export class TableMerger {
             mergedTable.setCell(row, currentColOffset + col, cellContent);
 
             if (options.maintainStyles) {
-              const cellStyle = table.getCellStyle(row, col);
-              if (cellStyle) {
+              // Verwenden des expliziten Stils anstelle des kombinierten Stils
+              const cellStyle = table.getRawCellStyle(row, col);
+              if (cellStyle && Object.keys(cellStyle).length > 0) {
                 mergedTable.setCellStyle(row, currentColOffset + col, cellStyle);
               }
             }
@@ -125,8 +126,9 @@ export class TableMerger {
             mergedTable.setCell(currentRowOffset + row, col, cellContent);
 
             if (options.maintainStyles) {
-              const cellStyle = table.getCellStyle(row, col);
-              if (cellStyle) {
+              // Verwenden des expliziten Stils anstelle des kombinierten Stils
+              const cellStyle = table.getRawCellStyle(row, col);
+              if (cellStyle && Object.keys(cellStyle).length > 0) {
                 mergedTable.setCellStyle(currentRowOffset + row, col, cellStyle);
               }
             }

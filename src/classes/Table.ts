@@ -284,12 +284,22 @@ export class PdfTable {
   }
 
   /**
-   * Gibt den Stil einer Zelle zurück
+   * Gibt den explizit gesetzten Stil einer Zelle zurück (ohne Design-Konfiguration)
    * @param row Zeilenindex
    * @param col Spaltenindex
    * @returns TableCellStyle-Objekt oder null
    */
-  getCellStyle(row: number, col: number): TableCellStyle | null {
+  getRawCellStyle(row: number, col: number): TableCellStyle | null {
+    return this.dataManager.getCellStyle(row, col);
+  }
+
+  /**
+   * Gibt den kombinierten Stil einer Zelle zurück (mit Design-Konfiguration)
+   * @param row Zeilenindex
+   * @param col Spaltenindex
+   * @returns TableCellStyle-Objekt
+   */
+  getCellStyle(row: number, col: number): TableCellStyle {
     // Überprüfen, ob ein expliziter Style gesetzt wurde
     const userStyle = this.dataManager.getCellStyle(row, col);
 

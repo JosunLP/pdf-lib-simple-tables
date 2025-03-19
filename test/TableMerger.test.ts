@@ -106,8 +106,8 @@ describe('TableMerger', () => {
     });
 
     // Prüfe, ob die Stile erhalten bleiben
-    const style1 = mergedTable.getCellStyle(0, 0);
-    const style2 = mergedTable.getCellStyle(0, 3); // Erste Zelle der zweiten Tabelle
+    const style1 = mergedTable.getRawCellStyle(0, 0);
+    const style2 = mergedTable.getRawCellStyle(0, 3); // Erste Zelle der zweiten Tabelle
 
     expect(style1?.fontWeight).toBe('bold');
     expect(style1?.backgroundColor).toEqual({ r: 255, g: 0, b: 0 });
