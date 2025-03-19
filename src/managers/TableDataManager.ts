@@ -99,4 +99,20 @@ export class TableDataManager {
   getOptions(): TableOptions {
     return { ...this.options }; // Return a copy to prevent modification
   }
+
+  /**
+   * Gibt die Anzahl der Zeilen zurück
+   * @returns Anzahl der Zeilen
+   */
+  getRowCount(): number {
+    return this.options.rows;
+  }
+
+  /**
+   * Gibt die Anzahl der Spalten zurück
+   * @returns Anzahl der Spalten
+   */
+  getColumnCount(): number {
+    return this.options.columns;
+  }
 }

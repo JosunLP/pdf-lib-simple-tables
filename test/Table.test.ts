@@ -80,3 +80,88 @@ test('PdfTable: should set and get custom font correctly', () => {
     'Invalid Base64 data',
   );
 });
+
+test('PdfTable: should correctly get row count', () => {
+  const table = createTable();
+  expect(table.getRowCount()).toBe(4);
+
+  table.addRow();
+  expect(table.getRowCount()).toBe(5);
+
+  table.removeRow(4);
+  expect(table.getRowCount()).toBe(4);
+});
+
+test('PdfTable: should correctly get column count', () => {
+  const table = createTable();
+  expect(table.getColumnCount()).toBe(4);
+
+  table.addColumn();
+  expect(table.getColumnCount()).toBe(5);
+
+  table.removeColumn(4);
+  expect(table.getColumnCount()).toBe(4);
+});
+
+test('PdfTable: should get design config correctly', () => {
+  const designConfig = {
+    fontSize: 12,
+    fontColor: { r: 10, g: 20, b: 30 },
+    backgroundColor: { r: 240, g: 240, b: 240 },
+  };
+
+  const table = new PdfTable({
+    columns: 3,
+    rows: 3,
+    designConfig,
+  });
+
+  const retrievedConfig = table.getDesignConfig();
+  expect(retrievedConfig.fontSize).toBe(designConfig.fontSize);
+  expect(retrievedConfig.fontColor).toEqual(designConfig.fontColor);
+  expect(retrievedConfig.backgroundColor).toEqual(designConfig.backgroundColor);
+});
+
+test('PdfTable: should apply design config correctly', () => {
+  const table = createTable();
+  const newConfig = {
+    fontSize: 16,
+    fontColor: { r: 50, g: 60, b: 70 },
+  };
+
+  table.applyDesignConfig(newConfig);
+  const retrievedConfig = table.getDesignConfig();
+
+  expect(retrievedConfig.fontSize).toBe(newConfig.fontSize);
+  expect(retrievedConfig.fontColor).toEqual(newConfig.fontColor);
+});
+
+test('PdfTable: should merge two tables correctly using instance method', () => {
+  const table1 = createTable();
+  const table2 = createTable();
+
+  table1.setCell(0, 0, 'Table 1');
+  table2.setCell(0, 0, 'Table 2');
+
+  const mergedTable = table1.merge([table2]);
+
+  expect(mergedTable.getRowCount()).toBe(8); // 4 + 4 rows
+  expect(mergedTable.getColumnCount()).toBe(4);
+  expect(mergedTable.getCell(0, 0)).toBe('Table 1');
+  expect(mergedTable.getCell(4, 0)).toBe('Table 2'); // First row of second table
+});
+
+test('PdfTable: should merge tables correctly using static method', () => {
+  const table1 = createTable();
+  const table2 = createTable();
+
+  table1.setCell(0, 0, 'Static 1');
+  table2.setCell(0, 0, 'Static 2');
+
+  const mergedTable = PdfTable.mergeTables([table1, table2], { direction: 'horizontal' });
+
+  expect(mergedTable.getRowCount()).toBe(4);
+  expect(mergedTable.getColumnCount()).toBe(8); // 4 + 4 columns
+  expect(mergedTable.getCell(0, 0)).toBe('Static 1');
+  expect(mergedTable.getCell(0, 4)).toBe('Static 2'); // First column of second table
+});

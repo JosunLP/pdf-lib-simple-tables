@@ -13,6 +13,7 @@ import { ImageEmbedder } from '../embedders/ImageEmbedder';
 import { TableTemplate } from '../templates/TableTemplate';
 import { TableTemplateManager } from '../managers/TableTemplateManager';
 import { predefinedTemplates } from '../templates/predefinedTemplates';
+import { TableMerger, MergeDirection, MergeTableOptions } from '../managers/TableMerger';
 
 /**
  * Pdf table
@@ -116,10 +117,6 @@ export class PdfTable {
   // Data access delegates
   getCell(row: number, col: number): string {
     return this.dataManager.getCell(row, col);
-  }
-
-  getCellStyle(row: number, col: number): TableCellStyle {
-    return this.dataManager.getCellStyle(row, col);
   }
 
   removeCell(row: number, col: number): void {
@@ -243,5 +240,86 @@ export class PdfTable {
     options: { x: number; y: number; width: number; height: number },
   ): Promise<PDFDocument> {
     return this.imageEmbedder.embedTableAsImage(existingDoc, imageBytes, options);
+  }
+
+  /**
+   * Gibt die aktuelle Design-Konfiguration zurück
+   * @returns DesignConfig-Objekt
+   */
+  getDesignConfig(): DesignConfig {
+    return this.designConfig;
+  }
+
+  /**
+   * Wendet eine Design-Konfiguration auf die Tabelle an
+   * @param config Design-Konfiguration
+   */
+  applyDesignConfig(config: DesignConfig): void {
+    this.designConfig = { ...this.designConfig, ...config };
+    this.styleManager.updateDesignConfig(this.designConfig);
+  }
+
+  /**
+   * Gibt die Anzahl der Zeilen zurück
+   * @returns Anzahl der Zeilen
+   */
+  getRowCount(): number {
+    return this.dataManager.getRowCount();
+  }
+
+  /**
+   * Gibt die Anzahl der Spalten zurück
+   * @returns Anzahl der Spalten
+   */
+  getColumnCount(): number {
+    return this.dataManager.getColumnCount();
+  }
+
+  /**
+   * Gibt eine Liste der zusammengeführten Zellen zurück
+   * @returns Array von MergedCell-Objekten
+   */
+  getMergedCells(): { startRow: number; startCol: number; endRow: number; endCol: number }[] {
+    return this.mergeCellManager.getMergedCells();
+  }
+
+  /**
+   * Gibt den Stil einer Zelle zurück
+   * @param row Zeilenindex
+   * @param col Spaltenindex
+   * @returns TableCellStyle-Objekt oder null
+   */
+  getCellStyle(row: number, col: number): TableCellStyle | null {
+    // Überprüfen, ob ein expliziter Style gesetzt wurde
+    const userStyle = this.dataManager.getCellStyle(row, col);
+
+    // Effektiven Stil berechnen, der Design-Config und ggf. Benutzer-Stil kombiniert
+    return this.styleManager.getEffectiveCellStyle(
+      row,
+      col,
+      userStyle || {},
+      this.getRowCount(),
+      this.getColumnCount(),
+    );
+  }
+
+  /**
+   * Fügt diese Tabelle mit anderen Tabellen zusammen
+   * @param tables Tabellen, die hinzugefügt werden sollen
+   * @param options Optionen für die Zusammenführung
+   * @returns Eine neue zusammengeführte PdfTable-Instanz
+   */
+  merge(tables: PdfTable[], options: MergeTableOptions = {}): PdfTable {
+    return TableMerger.mergeTables([this, ...tables], options);
+  }
+
+  /**
+   * Statische Methode zum Zusammenführen mehrerer Tabellen
+   * @param tables Array von Tabellen
+   * @param options Optionen für die Zusammenführung
+   * @returns Eine neue zusammengeführte PdfTable-Instanz
+   */
+  static mergeTables(tables: PdfTable[], options: MergeTableOptions = {}): PdfTable {
+    return TableMerger.mergeTables(tables, options);
   }
 }
