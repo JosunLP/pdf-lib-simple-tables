@@ -26,6 +26,7 @@
     - [Custom Templates](#custom-templates)
   - [Advanced Features](#advanced-features)
     - [Cell Merging](#cell-merging)
+    - [Table Merging](#table-merging)
     - [Dynamic Row Heights](#dynamic-row-heights)
     - [PDF Embedding](#pdf-embedding)
   - [Architecture](#architecture)
@@ -412,6 +413,75 @@ table.setCellStyle(1, 0, {
   alignment: 'center',
   backgroundColor: { r: 240, g: 240, b: 240 },
 });
+```
+
+### Table Merging
+
+Mehrere Tabellen zu einer einzelnen Tabelle zusammenführen:
+
+```typescript
+// Erstellen von zwei separaten Tabellen
+const headerTable = new PdfTable({ columns: 4, rows: 1 });
+headerTable.setCell(0, 0, 'Überschrift');
+headerTable.mergeCells(0, 0, 0, 3); // Überschrift über alle Spalten
+
+const dataTable = new PdfTable({ columns: 4, rows: 5 });
+// Daten in dataTable einfügen...
+
+// Instanzmethode (zusammenführen mit der aktuellen Tabelle)
+const mergedTable = headerTable.merge([dataTable], {
+  direction: 'vertical', // 'vertical' oder 'horizontal'
+  maintainStyles: true   // Stile der Ausgangstabellen beibehalten
+});
+
+// ODER: Statische Methode (kombiniert mehrere Tabellen)
+const mergedTable = PdfTable.mergeTables([headerTable, dataTable], {
+  direction: 'vertical',
+  maintainStyles: true
+});
+```
+
+Merge-Richtungen:
+
+- **Vertikal**: Tabellen werden untereinander angeordnet (Standardeinstellung)
+- **Horizontal**: Tabellen werden nebeneinander angeordnet
+
+Merge-Optionen:
+
+```typescript
+interface MergeTableOptions {
+  direction?: 'horizontal' | 'vertical'; // Standard: 'vertical'
+  maintainStyles?: boolean;              // Standard: false
+}
+```
+
+Eigenschaften werden automatisch übertragen:
+
+- Zellinhalte
+- Zellenstile (wenn maintainStyles=true)
+- Zusammengeführte Zellen aus den ursprünglichen Tabellen
+
+Beispiel für horizontale Zusammenführung:
+
+```typescript
+// Zwei Tabellen mit unterschiedlichen Daten
+const leftTable = new PdfTable({ columns: 2, rows: 3 });
+leftTable.setCell(0, 0, 'Linke Tabelle');
+leftTable.setCell(1, 0, 'Daten 1');
+leftTable.setCell(2, 0, 'Daten 2');
+
+const rightTable = new PdfTable({ columns: 2, rows: 3 });
+rightTable.setCell(0, 0, 'Rechte Tabelle');
+rightTable.setCell(1, 0, 'Info 1');
+rightTable.setCell(2, 0, 'Info 2');
+
+// Horizontal zusammenführen (nebeneinander)
+const combinedTable = PdfTable.mergeTables([leftTable, rightTable], {
+  direction: 'horizontal',
+  maintainStyles: true
+});
+
+// Ergebnis: Eine Tabelle mit 4 Spalten und 3 Zeilen
 ```
 
 ### Dynamic Row Heights

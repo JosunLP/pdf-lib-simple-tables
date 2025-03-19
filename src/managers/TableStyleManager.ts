@@ -14,6 +14,14 @@ export class TableStyleManager {
   }
 
   /**
+   * Aktualisiert die Design-Konfiguration
+   * @param config Neue Design-Konfiguration
+   */
+  updateDesignConfig(config: DesignConfig): void {
+    this.designConfig = config;
+  }
+
+  /**
    * Ermittelt den effektiven Stil für eine Zelle
    * indem Designkonfiguration und Benutzerstil kombiniert werden
    * @param row Zeilenindex
