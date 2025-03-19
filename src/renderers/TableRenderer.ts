@@ -541,6 +541,15 @@ export class TableRenderer {
     const textColor = style.fontColor || { r: 0, g: 0, b: 0 };
     const normTextColor = this.styleManager.normalizeColor(textColor);
 
+    // Basis-Textoptionen - keine Kursiv-Unterstützung mehr
+    const textOptions = {
+      x: 0, // wird später gesetzt
+      y: 0, // wird später gesetzt
+      size: fontSize,
+      color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
+      font: pdfFont,
+    };
+
     // Textumbruch basierend auf wordWrap-Eigenschaft
     const wordWrap = style.wordWrap || this.styleManager.designConfig.wordWrap || 'normal';
     const availableWidth = width - padding.left - padding.right;
@@ -577,14 +586,26 @@ export class TableRenderer {
         textY = y - height + padding.bottom;
       }
 
-      // Text zeichnen
+      // Normalen Text zeichnen - keine Kursiv-Behandlung mehr
       page.drawText(textToDisplay, {
+        ...textOptions,
         x: textX,
         y: textY,
-        size: fontSize,
-        color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
-        font: pdfFont,
       });
+
+      // TextDecoration zeichnen, falls angegeben
+      if (style.textDecoration && style.textDecoration !== 'none') {
+        const textWidth = this.calculateTextWidth(textToDisplay, fontSize, pdfFont);
+        const decorationY =
+          style.textDecoration === 'underline' ? textY - fontSize * 0.15 : textY + fontSize * 0.35; // line-through ist höher
+
+        page.drawLine({
+          start: { x: textX, y: decorationY },
+          end: { x: textX + textWidth, y: decorationY },
+          thickness: fontSize * 0.075, // ca. 7.5% der Schriftgröße
+          color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
+        });
+      }
     } else {
       // Textumbruch implementieren
       const textLines = this.wrapText(displayText, availableWidth, fontSize, pdfFont);
@@ -616,13 +637,29 @@ export class TableRenderer {
         }
 
         // Zeile zeichnen
+        const lineY = startY - i * lineHeight - fontSize;
+
+        // Normalen Text zeichnen - keine Kursiv-Behandlung mehr
         page.drawText(line, {
+          ...textOptions,
           x: textX,
-          y: startY - i * lineHeight - fontSize,
-          size: fontSize,
-          color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
-          font: pdfFont,
+          y: lineY,
         });
+
+        // TextDecoration für diese Textzeile zeichnen, falls angegeben
+        if (style.textDecoration && style.textDecoration !== 'none') {
+          const decorationY =
+            style.textDecoration === 'underline'
+              ? lineY - fontSize * 0.15
+              : lineY + fontSize * 0.35; // line-through ist höher
+
+          page.drawLine({
+            start: { x: textX, y: decorationY },
+            end: { x: textX + lineWidth, y: decorationY },
+            thickness: fontSize * 0.075, // ca. 7.5% der Schriftgröße
+            color: rgb(normTextColor.r, normTextColor.g, normTextColor.b),
+          });
+        }
       }
     }
 
