@@ -217,16 +217,35 @@ export class TableRenderer {
       const cellsToRender: CellRenderInfo[] = [];
       let currentY = startingY;
 
+      // Speichern der belegten Bereiche für vertikal zusammengeführte Zellen
+      // Format: [spalte, endZeile, breite]
+      const occupiedCells: [number, number, number][] = [];
+
       for (let row = startRow; row <= endRow; row++) {
         let x = startX;
+        let col = 0;
 
-        for (let col = 0; col < options.columns; col++) {
+        while (col < options.columns) {
+          // Prüfen, ob die aktuelle Position von einer vertikalen Zusammenführung aus einer oberen Zeile belegt ist
+          const occupiedIndex = occupiedCells.findIndex(
+            ([occupiedCol, occupiedEndRow]) => col === occupiedCol && row <= occupiedEndRow,
+          );
+
+          if (occupiedIndex !== -1) {
+            // Position ist durch eine vertikale Zusammenführung belegt - überspringe die Spalte
+            const occupiedWidth = occupiedCells[occupiedIndex][2];
+            x += occupiedWidth;
+            col++;
+            continue;
+          }
+
           // Finde die zusammengeführte Zelle, die diese Position enthält (falls vorhanden)
           const mergedCell = this.findMergedCellContaining(row, col, mergedCells);
 
           // Wenn diese Position keine primäre Zelle einer zusammengeführten Zelle ist, überspringen
           if (mergedCell && (row !== mergedCell.startRow || col !== mergedCell.startCol)) {
-            x += colWidth;
+            // Nur zur nächsten Spalte gehen, ohne die x-Position zu verändern
+            col++;
             continue;
           }
 
@@ -241,23 +260,49 @@ export class TableRenderer {
               mergedCell.endRow > row
                 ? rowHeights.slice(row, mergedCell.endRow + 1).reduce((sum, h) => sum + h, 0)
                 : rowHeights[row];
+
+            // Bei vertikalen Zusammenführungen merken wir uns die belegten Spalten für nachfolgende Zeilen
+            if (mergedCell.endRow > row) {
+              occupiedCells.push([col, mergedCell.endRow, cellWidth]);
+            }
+
+            const style = this.styleManager.getEffectiveCellStyle(row, col, cellStyles[row][col]);
+
+            cellsToRender.push({
+              row,
+              col,
+              x,
+              y: currentY,
+              width: cellWidth,
+              height: cellHeight,
+              content: data[row][col] || '',
+              style,
+              isHeader: isHeaderSection,
+            });
+
+            // Erhöhe X-Position und überspringe alle Spalten, die von dieser zusammengeführten Zelle abgedeckt sind
+            x += cellWidth;
+            col = mergedCell.endCol + 1;
+          } else {
+            // Normale, nicht zusammengeführte Zelle
+            const style = this.styleManager.getEffectiveCellStyle(row, col, cellStyles[row][col]);
+
+            cellsToRender.push({
+              row,
+              col,
+              x,
+              y: currentY,
+              width: cellWidth,
+              height: cellHeight,
+              content: data[row][col] || '',
+              style,
+              isHeader: isHeaderSection,
+            });
+
+            // Erhöhe X-Position für die nächste Zelle
+            x += cellWidth;
+            col++;
           }
-
-          const style = this.styleManager.getEffectiveCellStyle(row, col, cellStyles[row][col]);
-
-          cellsToRender.push({
-            row,
-            col,
-            x,
-            y: currentY,
-            width: cellWidth,
-            height: cellHeight,
-            content: data[row][col] || '',
-            style,
-            isHeader: isHeaderSection,
-          });
-
-          x += cellWidth;
         }
 
         currentY -= rowHeights[row];
