@@ -149,62 +149,44 @@ export class TableRenderer {
 
         for (let col = 0; col < options.columns; col++) {
           // Überprüfen, ob die Zelle Teil einer zusammengeführten Zelle ist
-          const merged = mergedCells.find(
-            (mc) =>
-              row >= mc.startRow && row <= mc.endRow && col >= mc.startCol && col <= mc.endCol,
-          );
+          const merged = this.findPrimaryMergedCell(row, col, mergedCells);
 
           // Nur für die erste Zelle einer zusammengeführten Gruppe oder für reguläre Zellen
-          if (!merged || (merged && row === merged.startRow && col === merged.startCol)) {
-            const cellWidth = merged ? colWidth * (merged.endCol - merged.startCol + 1) : colWidth;
+          if (merged) {
+            if (row === merged.startRow && col === merged.startCol) {
+              const cellWidth = colWidth * (merged.endCol - merged.startCol + 1);
+              const style = this.styleManager.getEffectiveCellStyle(row, col, cellStyles[row][col]);
+              const text = data[row][col] || '';
+              const padding = this.calculateCellPadding(style);
 
+              // Berechnen der erforderlichen Höhe für diese Zelle
+              const requiredHeight = this.calculateRequiredHeight(
+                text,
+                cellWidth,
+                style,
+                pdfFont,
+                padding,
+              );
+
+              const rowsSpanned = merged.endRow - merged.startRow + 1;
+              const heightPerRow = requiredHeight / rowsSpanned;
+              maxRowHeight = Math.max(maxRowHeight, heightPerRow);
+            }
+          } else {
             const style = this.styleManager.getEffectiveCellStyle(row, col, cellStyles[row][col]);
             const text = data[row][col] || '';
-
-            // Berechnen des Paddings
-            let padding = { top: 5, right: 5, bottom: 5, left: 5 };
-            if (style.padding) {
-              if (typeof style.padding === 'number') {
-                padding = {
-                  top: style.padding,
-                  right: style.padding,
-                  bottom: style.padding,
-                  left: style.padding,
-                };
-              } else {
-                // Parse CSS-style padding
-                const parts = style.padding.split(' ').map((p) => parseInt(p, 10));
-                switch (parts.length) {
-                  case 1:
-                    padding = { top: parts[0], right: parts[0], bottom: parts[0], left: parts[0] };
-                    break;
-                  case 2:
-                    padding = { top: parts[0], right: parts[1], bottom: parts[0], left: parts[1] };
-                    break;
-                  case 4:
-                    padding = { top: parts[0], right: parts[1], bottom: parts[2], left: parts[3] };
-                    break;
-                }
-              }
-            }
+            const padding = this.calculateCellPadding(style);
 
             // Berechnen der erforderlichen Höhe für diese Zelle
             const requiredHeight = this.calculateRequiredHeight(
               text,
-              cellWidth,
+              colWidth,
               style,
               pdfFont,
               padding,
             );
 
             maxRowHeight = Math.max(maxRowHeight, requiredHeight);
-
-            // Bei zusammengeführten Zellen die Höhe pro Zeile anpassen
-            if (merged) {
-              const rowsSpanned = merged.endRow - merged.startRow + 1;
-              const heightPerRow = requiredHeight / rowsSpanned;
-              maxRowHeight = Math.max(maxRowHeight, heightPerRow);
-            }
           }
         }
 
@@ -212,143 +194,230 @@ export class TableRenderer {
       }
     }
 
-    // Funktion zum Zeichnen einer Header-Zeile
-    const drawHeaderRows = (): number => {
-      if (repeatHeaderRows <= 0) return currentY;
+    // Definition einer Funktion zur Identifikation und Berechnung von Zelleneigenschaften
+    interface CellRenderInfo {
+      row: number;
+      col: number;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      content: string;
+      style: TableCellStyle;
+      isHeader: boolean;
+    }
 
-      let headerY = currentY;
+    // Funktion zur Berechnung der zu rendernden Zelleninformationen
+    const calculateCellsToRender = (
+      startRow: number,
+      endRow: number,
+      isHeaderSection: boolean,
+      startingY: number,
+    ): CellRenderInfo[] => {
+      const cellsToRender: CellRenderInfo[] = [];
+      let currentY = startingY;
 
-      for (
-        let headerRow = 0;
-        headerRow < repeatHeaderRows && headerRow < options.rows;
-        headerRow++
-      ) {
+      for (let row = startRow; row <= endRow; row++) {
         let x = startX;
 
         for (let col = 0; col < options.columns; col++) {
-          const isPartOfMergedCell = mergedCells.some(
-            (mc) =>
-              headerRow > mc.startRow &&
-              headerRow <= mc.endRow &&
-              col >= mc.startCol &&
-              col <= mc.endCol,
-          );
+          // Finde die zusammengeführte Zelle, die diese Position enthält (falls vorhanden)
+          const mergedCell = this.findMergedCellContaining(row, col, mergedCells);
 
-          if (isPartOfMergedCell) {
+          // Wenn diese Position keine primäre Zelle einer zusammengeführten Zelle ist, überspringen
+          if (mergedCell && (row !== mergedCell.startRow || col !== mergedCell.startCol)) {
             x += colWidth;
             continue;
           }
 
-          const merged = mergedCells.find((mc) => mc.startRow === headerRow && mc.startCol === col);
-
+          // Berechne Zellenbreite und -höhe
           let cellWidth = colWidth;
-          let cellHeight = rowHeights[headerRow];
+          let cellHeight = rowHeights[row];
 
-          if (merged) {
-            cellWidth = colWidth * (merged.endCol - merged.startCol + 1);
-            cellHeight = rowHeights
-              .slice(headerRow, merged.endRow + 1)
-              .reduce((sum, h) => sum + h, 0);
+          // Anpassung für zusammengeführte Zellen
+          if (mergedCell) {
+            cellWidth = colWidth * (mergedCell.endCol - mergedCell.startCol + 1);
+            cellHeight =
+              mergedCell.endRow > row
+                ? rowHeights.slice(row, mergedCell.endRow + 1).reduce((sum, h) => sum + h, 0)
+                : rowHeights[row];
           }
 
-          const style = this.styleManager.getEffectiveCellStyle(
-            headerRow,
-            col,
-            cellStyles[headerRow][col],
-          );
+          const style = this.styleManager.getEffectiveCellStyle(row, col, cellStyles[row][col]);
 
-          // Draw background, text, border, etc.
-          this.drawCell(
-            page,
+          cellsToRender.push({
+            row,
+            col,
             x,
-            headerY,
-            cellWidth,
-            cellHeight,
-            data[headerRow][col] || '',
+            y: currentY,
+            width: cellWidth,
+            height: cellHeight,
+            content: data[row][col] || '',
             style,
-            pdfFont,
-          );
+            isHeader: isHeaderSection,
+          });
 
           x += cellWidth;
         }
 
-        headerY -= rowHeights[headerRow];
+        currentY -= rowHeights[row];
       }
 
-      return headerY;
+      return cellsToRender;
     };
 
-    // Iterate over each row and column
-    for (let row = 0; row < options.rows; row++) {
+    // Funktion zum Zeichnen einer Header-Zeile
+    const drawHeaderRows = (): number => {
+      if (repeatHeaderRows <= 0) return currentY;
+
+      const headerCells = calculateCellsToRender(0, repeatHeaderRows - 1, true, currentY);
+
+      for (const cell of headerCells) {
+        this.drawCell(
+          page,
+          cell.x,
+          cell.y,
+          cell.width,
+          cell.height,
+          cell.content,
+          cell.style,
+          pdfFont,
+        );
+      }
+
+      return (
+        currentY -
+        headerCells
+          .filter((cell) => cell.row === repeatHeaderRows - 1)
+          .reduce((max, cell) => Math.max(max, cell.height), 0)
+      );
+    };
+
+    // Zeichne Tabelleninhalt zeilenweise
+    let row = 0;
+    while (row < options.rows) {
       const rowHeight = rowHeights[row];
 
-      // Create a new page if there is not enough space
+      // Erstelle eine neue Seite, wenn nicht genug Platz vorhanden ist
       if (currentY - rowHeight < pageBreakThreshold) {
         page = pdfDoc.addPage();
         currentY = page.getSize().height - 50;
 
-        // Wenn Header-Zeilen wiederholt werden sollen und headerRepetition aktiviert ist, zeichne sie
+        // Zeichne Header-Zeilen wenn nötig
         if (repeatHeaderRows > 0 && options.headerRepetition !== false) {
           currentY = drawHeaderRows();
         }
       }
 
-      // Skip drawing header rows again if they were already drawn as repeating headers
+      // Überspringe Header-Zeilen, wenn sie bereits als wiederholende Header gezeichnet wurden
       if (row < repeatHeaderRows && currentY !== height - 50 && currentY !== options.startY) {
+        row++;
         continue;
       }
 
-      let x = startX;
-      for (let col = 0; col < options.columns; col++) {
-        // Check if this cell is part of a merged cell
-        const isPartOfMergedCell = mergedCells.some(
-          (mc) => row > mc.startRow && row <= mc.endRow && col >= mc.startCol && col <= mc.endCol,
-        );
+      // Bestimme Endzeile für aktuellen Zeichenvorgang (bis Seitenumbruch oder Tabellenende)
+      let endRow = row;
+      let accumulatedHeight = rowHeights[row];
 
-        // Skip rendering for cells that are part of a merged cell but not the starting cell
-        if (isPartOfMergedCell) {
-          x += colWidth;
-          continue;
-        }
-
-        const merged = mergedCells.find((mc) => mc.startRow === row && mc.startCol === col);
-
-        // If merged, calculate total width and height
-        let cellWidth = colWidth;
-        let cellHeight = rowHeight;
-
-        if (merged) {
-          cellWidth = colWidth * (merged.endCol - merged.startCol + 1);
-
-          // Bei zusammengeführten Zellen die Gesamthöhe aller Zeilen verwenden
-          cellHeight =
-            merged.endRow > row
-              ? rowHeights.slice(row, merged.endRow + 1).reduce((sum, h) => sum + h, 0)
-              : rowHeight;
-        }
-
-        // Hier wird der StyleManager für effektive Styles verwendet
-        const style = this.styleManager.getEffectiveCellStyle(row, col, cellStyles[row][col]);
-
-        // Draw background, text, border, etc.
-        this.drawCell(
-          page,
-          x,
-          currentY,
-          cellWidth,
-          cellHeight,
-          data[row][col] || '',
-          style,
-          pdfFont,
-        );
-
-        x += cellWidth;
+      while (
+        endRow + 1 < options.rows &&
+        currentY - accumulatedHeight - rowHeights[endRow + 1] >= pageBreakThreshold
+      ) {
+        endRow++;
+        accumulatedHeight += rowHeights[endRow];
       }
 
-      currentY -= rowHeight;
+      // Berechne und rendere die Zellen für den aktuellen Zeilenbereich
+      const cellsToRender = calculateCellsToRender(row, endRow, false, currentY);
+
+      for (const cell of cellsToRender) {
+        this.drawCell(
+          page,
+          cell.x,
+          cell.y,
+          cell.width,
+          cell.height,
+          cell.content,
+          cell.style,
+          pdfFont,
+        );
+      }
+
+      // Aktualisiere currentY für die nächste Zeile
+      currentY -= accumulatedHeight;
+      row = endRow + 1;
     }
 
     return pdfDoc;
+  }
+
+  /**
+   * Berechnet das Padding für eine Zelle basierend auf dem angegebenen Style
+   */
+  private calculateCellPadding(style: TableCellStyle): {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  } {
+    let padding = { top: 5, right: 5, bottom: 5, left: 5 };
+
+    if (style.padding) {
+      if (typeof style.padding === 'number') {
+        padding = {
+          top: style.padding,
+          right: style.padding,
+          bottom: style.padding,
+          left: style.padding,
+        };
+      } else {
+        // Parse CSS-style padding
+        const parts = style.padding.split(' ').map((p) => parseInt(p, 10));
+        switch (parts.length) {
+          case 1:
+            padding = { top: parts[0], right: parts[0], bottom: parts[0], left: parts[0] };
+            break;
+          case 2:
+            padding = { top: parts[0], right: parts[1], bottom: parts[0], left: parts[1] };
+            break;
+          case 4:
+            padding = { top: parts[0], right: parts[1], bottom: parts[2], left: parts[3] };
+            break;
+        }
+      }
+    }
+
+    return padding;
+  }
+
+  /**
+   * Findet die Haupt-Zelle (Start-Zelle) einer zusammengeführten Zelle
+   * die die gegebene Position enthält, oder undefined wenn keine gefunden wird
+   */
+  private findPrimaryMergedCell(
+    row: number,
+    col: number,
+    mergedCells: MergedCell[],
+  ): MergedCell | undefined {
+    for (const mc of mergedCells) {
+      if (row >= mc.startRow && row <= mc.endRow && col >= mc.startCol && col <= mc.endCol) {
+        return mc;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Prüft, ob eine Position innerhalb einer zusammengeführten Zelle liegt
+   */
+  private findMergedCellContaining(
+    row: number,
+    col: number,
+    mergedCells: MergedCell[],
+  ): MergedCell | undefined {
+    return mergedCells.find(
+      (mc) => row >= mc.startRow && row <= mc.endRow && col >= mc.startCol && col <= mc.endCol,
+    );
   }
 
   /**
