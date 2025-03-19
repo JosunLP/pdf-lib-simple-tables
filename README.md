@@ -43,6 +43,7 @@ const pdfBytes = await pdfDoc.save();
 - Dynamic row heights based on content
 - Complex border styles
 - Embedding tables into existing PDFs
+- Table merging with custom designs
 - Full browser support
 
 ## Documentation

@@ -432,12 +432,14 @@ const dataTable = new PdfTable({ columns: 4, rows: 5 });
 const mergedTable = headerTable.merge([dataTable], {
   direction: 'vertical', // 'vertical' oder 'horizontal'
   maintainStyles: true, // Stile der Ausgangstabellen beibehalten
+  designConfig: modernDesignConfig, // Optionales einheitliches Design für die zusammengeführte Tabelle
 });
 
 // ODER: Statische Methode (kombiniert mehrere Tabellen)
 const mergedTable = PdfTable.mergeTables([headerTable, dataTable], {
   direction: 'vertical',
   maintainStyles: true,
+  designConfig: modernDesignConfig, // Einheitliches Design anwenden
 });
 ```
 
@@ -452,36 +454,53 @@ Merge-Optionen:
 interface MergeTableOptions {
   direction?: 'horizontal' | 'vertical'; // Standard: 'vertical'
   maintainStyles?: boolean; // Standard: false
+  designConfig?: DesignConfig; // Optionales einheitliches Design für die zusammengeführte Tabelle
 }
 ```
 
 Eigenschaften werden automatisch übertragen:
 
 - Zellinhalte
-- Zellenstile (wenn maintainStyles=true)
+- Zellenstile (wenn maintainStyles=true und kein designConfig angegeben)
 - Zusammengeführte Zellen aus den ursprünglichen Tabellen
 
-Beispiel für horizontale Zusammenführung:
+Wenn sowohl `maintainStyles` als auch `designConfig` angegeben sind, hat `designConfig` Vorrang.
+
+Beispiel für horizontale Zusammenführung mit einheitlichem Design:
 
 ```typescript
-// Zwei Tabellen mit unterschiedlichen Daten
-const leftTable = new PdfTable({ columns: 2, rows: 3 });
+import { PdfTable, modernDesignConfig } from 'pdf-lib-simple-tables';
+
+// Zwei Tabellen mit unterschiedlichen Designs
+const leftTable = new PdfTable({
+  columns: 2,
+  rows: 3,
+  designConfig: {
+    backgroundColor: { r: 245, g: 245, b: 245 },
+    fontColor: { r: 50, g: 50, b: 50 },
+  },
+});
 leftTable.setCell(0, 0, 'Linke Tabelle');
 leftTable.setCell(1, 0, 'Daten 1');
-leftTable.setCell(2, 0, 'Daten 2');
 
-const rightTable = new PdfTable({ columns: 2, rows: 3 });
+const rightTable = new PdfTable({
+  columns: 2,
+  rows: 3,
+  designConfig: {
+    backgroundColor: { r: 230, g: 240, b: 255 },
+    fontColor: { r: 30, g: 30, b: 100 },
+  },
+});
 rightTable.setCell(0, 0, 'Rechte Tabelle');
 rightTable.setCell(1, 0, 'Info 1');
-rightTable.setCell(2, 0, 'Info 2');
 
-// Horizontal zusammenführen (nebeneinander)
+// Horizontal zusammenführen mit einheitlichem Design
 const combinedTable = PdfTable.mergeTables([leftTable, rightTable], {
   direction: 'horizontal',
-  maintainStyles: true,
+  designConfig: modernDesignConfig, // Verwenden eines vordefinierten Templates
 });
 
-// Ergebnis: Eine Tabelle mit 4 Spalten und 3 Zeilen
+// Ergebnis: Eine Tabelle mit 4 Spalten und 3 Zeilen mit modernem Design
 ```
 
 ### Dynamic Row Heights

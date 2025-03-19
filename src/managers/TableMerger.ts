@@ -1,4 +1,5 @@
 import { PdfTable } from '../classes/Table';
+import { DesignConfig } from '../config/DesignConfig';
 
 // Typ als separate Export-Deklaration definieren
 export type MergeDirection = 'horizontal' | 'vertical';
@@ -6,6 +7,7 @@ export type MergeDirection = 'horizontal' | 'vertical';
 export interface MergeTableOptions {
   direction?: MergeDirection;
   maintainStyles?: boolean;
+  designConfig?: DesignConfig; // Neue Option für ein einheitliches Design
 }
 
 export class TableMerger {
@@ -22,11 +24,19 @@ export class TableMerger {
 
     const direction = options.direction || 'vertical';
 
+    let mergedTable: PdfTable;
     if (direction === 'vertical') {
-      return this.mergeVertical(tables, options);
+      mergedTable = this.mergeVertical(tables, options);
     } else {
-      return this.mergeHorizontal(tables, options);
+      mergedTable = this.mergeHorizontal(tables, options);
     }
+
+    // Wenn ein eigenes Design konfiguriert wurde, wenden wir es auf die zusammengeführte Tabelle an
+    if (options.designConfig) {
+      mergedTable.applyDesignConfig(options.designConfig);
+    }
+
+    return mergedTable;
   }
 
   /**
