@@ -1,7 +1,6 @@
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { FontManager } from '../src/managers/FontManager';
 import { CustomFont } from '../src/models/CustomFont';
-import fontkit from '@pdf-lib/fontkit';
 
 // Mock für embedFont, um Probleme mit ungültigen Font-Daten zu umgehen
 jest.mock('pdf-lib', () => ({

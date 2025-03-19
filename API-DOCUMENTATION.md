@@ -431,13 +431,13 @@ const dataTable = new PdfTable({ columns: 4, rows: 5 });
 // Instanzmethode (zusammenführen mit der aktuellen Tabelle)
 const mergedTable = headerTable.merge([dataTable], {
   direction: 'vertical', // 'vertical' oder 'horizontal'
-  maintainStyles: true   // Stile der Ausgangstabellen beibehalten
+  maintainStyles: true, // Stile der Ausgangstabellen beibehalten
 });
 
 // ODER: Statische Methode (kombiniert mehrere Tabellen)
 const mergedTable = PdfTable.mergeTables([headerTable, dataTable], {
   direction: 'vertical',
-  maintainStyles: true
+  maintainStyles: true,
 });
 ```
 
@@ -451,7 +451,7 @@ Merge-Optionen:
 ```typescript
 interface MergeTableOptions {
   direction?: 'horizontal' | 'vertical'; // Standard: 'vertical'
-  maintainStyles?: boolean;              // Standard: false
+  maintainStyles?: boolean; // Standard: false
 }
 ```
 
@@ -478,7 +478,7 @@ rightTable.setCell(2, 0, 'Info 2');
 // Horizontal zusammenführen (nebeneinander)
 const combinedTable = PdfTable.mergeTables([leftTable, rightTable], {
   direction: 'horizontal',
-  maintainStyles: true
+  maintainStyles: true,
 });
 
 // Ergebnis: Eine Tabelle mit 4 Spalten und 3 Zeilen

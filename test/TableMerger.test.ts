@@ -1,6 +1,6 @@
 import { PdfTable } from '../src/classes/Table';
 import { TableOptions } from '../src/interfaces/TableOptions';
-import { TableMerger, MergeDirection, MergeTableOptions } from '../src/managers/TableMerger';
+import { TableMerger } from '../src/managers/TableMerger';
 
 function createTestTable(options?: Partial<TableOptions>): PdfTable {
   const defaultOptions: TableOptions = {

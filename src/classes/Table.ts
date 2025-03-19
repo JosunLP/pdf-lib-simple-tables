@@ -13,7 +13,7 @@ import { ImageEmbedder } from '../embedders/ImageEmbedder';
 import { TableTemplate } from '../templates/TableTemplate';
 import { TableTemplateManager } from '../managers/TableTemplateManager';
 import { predefinedTemplates } from '../templates/predefinedTemplates';
-import { TableMerger, MergeDirection, MergeTableOptions } from '../managers/TableMerger';
+import { TableMerger, MergeTableOptions } from '../managers/TableMerger';
 
 /**
  * Pdf table
