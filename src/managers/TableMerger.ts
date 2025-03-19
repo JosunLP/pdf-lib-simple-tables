@@ -1,5 +1,6 @@
 import { PdfTable } from '../classes/Table';
 
+// Typ als separate Export-Deklaration definieren
 export type MergeDirection = 'horizontal' | 'vertical';
 
 export interface MergeTableOptions {

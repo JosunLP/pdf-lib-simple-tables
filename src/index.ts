@@ -5,4 +5,5 @@ export * from './config/DesignConfig';
 export * from './templates/TableTemplate';
 export * from './templates/predefinedTemplates';
 export { TableTemplateManager } from './managers/TableTemplateManager';
-export { TableMerger, MergeDirection, MergeTableOptions } from './managers/TableMerger';
+export { TableMerger } from './managers/TableMerger';
+export type { MergeDirection, MergeTableOptions } from './managers/TableMerger';
