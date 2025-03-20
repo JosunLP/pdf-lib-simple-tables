@@ -332,4 +332,34 @@ export class PdfTable {
   static mergeTables(tables: PdfTable[], options: MergeTableOptions = {}): PdfTable {
     return TableMerger.mergeTables(tables, options);
   }
+
+  /**
+   * Gibt die konfigurierte Zeilenhöhe zurück
+   * @returns Die konfigurierte Zeilenhöhe oder 0, wenn keine spezifiziert wurde
+   */
+  getRowHeight(): number {
+    return this.dataManager.getOptions().rowHeight || 0;
+  }
+
+  /**
+   * Setzt die Zeilenhöhe für eine bestimmte Zeile oder für alle Zeilen
+   * @param rowOrHeight Zeilenindex oder Höhe für alle Zeilen
+   * @param height Höhe der Zeile (nur wenn rowOrHeight ein Index ist)
+   */
+  setRowHeight(rowOrHeight: number, height?: number): void {
+    // Wenn nur ein Parameter übergeben wurde, setze diese Höhe für alle Zeilen
+    if (height === undefined) {
+      const options = this.dataManager.getOptions();
+      options.rowHeight = rowOrHeight;
+      return;
+    }
+
+    // Ansonsten setze die Höhe für eine spezifische Zeile
+    // Da die aktuelle Implementierung keine individuellen Zeilenhöhen unterstützt,
+    // setzen wir die maximale Höhe für alle Zeilen, wenn eine Zeile eine größere Höhe benötigt
+    const currentHeight = this.getRowHeight();
+    if (height > currentHeight) {
+      this.setRowHeight(height);
+    }
+  }
 }

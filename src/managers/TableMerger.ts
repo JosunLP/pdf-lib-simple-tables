@@ -8,6 +8,7 @@ export interface MergeTableOptions {
   direction?: MergeDirection;
   maintainStyles?: boolean;
   designConfig?: DesignConfig; // Neue Option für ein einheitliches Design
+  maintainRowHeights?: boolean; // Neue Option, um Zeilenhöhen zu übernehmen
 }
 
 export class TableMerger {
@@ -23,6 +24,8 @@ export class TableMerger {
     }
 
     const direction = options.direction || 'vertical';
+    const maintainRowHeights =
+      options.maintainRowHeights !== false && options.maintainStyles !== false;
 
     let mergedTable: PdfTable;
     if (direction === 'vertical') {
@@ -36,7 +39,57 @@ export class TableMerger {
       mergedTable.applyDesignConfig(options.designConfig);
     }
 
+    // Übernehme die Zeilenhöhen aus den Quelltabellen, wenn gewünscht
+    if (maintainRowHeights) {
+      this.transferRowHeights(tables, mergedTable, direction);
+    }
+
     return mergedTable;
+  }
+
+  /**
+   * Überträgt die Zeilenhöhen von den Quelltabellen auf die Zieltabelle
+   * @param sourceTables Quelltabellen
+   * @param targetTable Zieltabelle
+   * @param direction Richtung der Zusammenführung
+   */
+  private static transferRowHeights(
+    sourceTables: PdfTable[],
+    targetTable: PdfTable,
+    direction: MergeDirection,
+  ): void {
+    if (direction === 'vertical') {
+      // Bei vertikaler Zusammenführung: Wir übernehmen die Zeilenhöhe für jede Quelltabelle separat
+      // Wir sammeln die höchste Zeilenhöhe aller Tabellen
+      let maxRowHeight = 0;
+
+      for (const table of sourceTables) {
+        const rowHeight = table.getRowHeight();
+        if (rowHeight > maxRowHeight) {
+          maxRowHeight = rowHeight;
+        }
+      }
+
+      // Wende die maximale Zeilenhöhe auf die Zieltabelle an
+      if (maxRowHeight > 0) {
+        targetTable.setRowHeight(maxRowHeight);
+      }
+    } else {
+      // Bei horizontaler Zusammenführung: Wir verwenden die maximale Zeilenhöhe aus allen Tabellen
+      let maxRowHeight = 0;
+
+      for (const table of sourceTables) {
+        const rowHeight = table.getRowHeight();
+        if (rowHeight > maxRowHeight) {
+          maxRowHeight = rowHeight;
+        }
+      }
+
+      // Wende die maximale Zeilenhöhe auf die Zieltabelle an
+      if (maxRowHeight > 0) {
+        targetTable.setRowHeight(maxRowHeight);
+      }
+    }
   }
 
   /**
